@@ -112,6 +112,23 @@ public class Constants {
         put(20, "Breathing");
     }};
 
+    public static final Map<Integer, Integer> TFCODE_TO_ACTIVITY_CODE = new HashMap<Integer, Integer>() {{
+        put(0,  0);    // "Sitting",
+        put(1,  4);    // "Sitting bent forward",
+        put(2,  5);    // "Sitting bent backward",
+        put(3,  1);    // "Walking at normal speed",
+        put(4,  100);  // "Standing",
+        put(5,  2);    // "Lying down on back",
+        put(6,  7);    // "Lying down left",
+        put(7,  6);    // "Lying down right",
+        put(8,  8);    // "Lying down on stomach",
+        put(9,  9);    // "Movement",
+        put(10, 11);   // "Running",
+        put(11, 12);   // "Climbing stairs",
+        put(12, 13);   // "Descending stairs",
+        put(13, 31);   // "Desk work"
+    }};
+
     public static final String PREF_USER_FIRST_TIME = "user_first_time";
 
 }

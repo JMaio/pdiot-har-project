@@ -62,8 +62,8 @@ class BluetoothService : Service() {
     }
 
     fun onScanSuccess(scanResult: ScanResult, respeckUUID: String) {
-        Log.i("ble", "Scan successful")
-        Log.i("ble", "Found " + scanResult.bleDevice.name + ", " + scanResult.bleDevice.macAddress)
+        Log.d("ble", "Scan successful")
+        Log.d("ble", "Found " + scanResult.bleDevice.name + ", " + scanResult.bleDevice.macAddress)
 
         // if we are looking for RespeckV6
         if(scanResult.bleDevice.macAddress == respeckUUID) {
@@ -117,7 +117,7 @@ class BluetoothService : Service() {
                 processRESpeckPacket(it, respeckVersion, this)
                 val respeckFoundIntent = Intent(Constants.ACTION_RESPECK_CONNECTED)
                 sendBroadcast(respeckFoundIntent)
-                Log.i("brd", "sent the connected broadcast")
+                Log.d("brd", "sent the connected broadcast")
                 interval++
 
             },

@@ -4,29 +4,27 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.Looper
 import android.util.Log
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
-import com.specknet.pdiotapp.utils.DelayRespeck
 import com.specknet.pdiotapp.R
-import com.specknet.pdiotapp.utils.RespeckData
 import com.specknet.pdiotapp.utils.Constants
+import com.specknet.pdiotapp.utils.DelayRespeck
+import com.specknet.pdiotapp.utils.RespeckData
 import kotlinx.android.synthetic.main.activity_live_data.*
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.DelayQueue
-import kotlin.collections.ArrayList
 import kotlin.math.sqrt
-
 
 
 class LiveDataActivity : AppCompatActivity() {
@@ -39,6 +37,7 @@ class LiveDataActivity : AppCompatActivity() {
     lateinit var dataSet_y: LineDataSet
     lateinit var dataSet_z: LineDataSet
     lateinit var dataSet_mag: LineDataSet
+
     var time = 0f
     lateinit var allAccelData: LineData
     lateinit var chart: LineChart
@@ -49,28 +48,31 @@ class LiveDataActivity : AppCompatActivity() {
 
     val filterTest = IntentFilter(Constants.ACTION_INNER_RESPECK_BROADCAST)
 
+    // https://www.tensorflow.org/lite/guide/inference#load_and_run_a_model_in_java
+    // load tf lite model file
+    private var activityClassifier = ActivityClassifier(this)
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_live_data)
 
         // get the accel fields
-        var accel_x = findViewById<TextView>(R.id.accel_x)
-        var accel_y = findViewById<TextView>(R.id.accel_y)
-        var accel_z = findViewById<TextView>(R.id.accel_z)
-        var magTextView = findViewById<TextView>(R.id.magTextView)
+        val accelX = findViewById<TextView>(R.id.accel_x)
+        val accelY = findViewById<TextView>(R.id.accel_y)
+        val accelZ = findViewById<TextView>(R.id.accel_z)
+        val magTextView = findViewById<TextView>(R.id.magTextView)
 
-        var modelPredictionText = findViewById<TextView>(R.id.modelPredictionText)
+
+        var modelPredictionText = findViewById<TextView>(R.id.modelPredictionActivityText)
 
         setupChart()
 
         // set up the broadcast receiver
         respeckLiveUpdateReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
-
-                Log.i("thread", "I am running on thread = " + Thread.currentThread().name)
-
+//                Log.i("thread", "I am running on thread = " + Thread.currentThread().name)
                 val action = intent.action
-
                 if (action == Constants.ACTION_INNER_RESPECK_BROADCAST) {
 
                     // get all relevant intent contents
@@ -78,7 +80,7 @@ class LiveDataActivity : AppCompatActivity() {
                     val y = intent.getFloatExtra(Constants.EXTRA_RESPECK_LIVE_Y, 0f)
                     val z = intent.getFloatExtra(Constants.EXTRA_RESPECK_LIVE_Z, 0f)
 
-                    val mag = sqrt((x*x + y*y + z*z).toDouble())
+                    val mag = sqrt((x * x + y * y + z * z).toDouble())
 
                     val data =
                         RespeckData(
@@ -96,22 +98,16 @@ class LiveDataActivity : AppCompatActivity() {
                         )
                     mDelayRespeckQueue.add(delayRespeck)
 
-//                    probably run tf here
-
-                    val prediction = if (mag > 1.0) "Running" else "Sitting"
+                    classifyActivity(data)
 
                     runOnUiThread {
-                        accel_x.text = "${getString(R.string.accel_x)} = $x"
-                        accel_y.text = "${getString(R.string.accel_y)} = $y"
-                        accel_z.text = "${getString(R.string.accel_z)} = $z"
-                        magTextView.text = "${getString(R.string.mag)} = $mag"
-
-                        modelPredictionText.text = prediction
+                        accelX.text = "${getString(R.string.accel_x)} = ${x})"
+                        accelY.text = "${getString(R.string.accel_y)} = ${y})"
+                        accelZ.text = "${getString(R.string.accel_z)} = ${z})"
+                        magTextView.text = "${getString(R.string.mag)} = ${mag})"
                     }
-
                     time += 1
                     updateGraph()
-
                 }
             }
         }
@@ -123,8 +119,13 @@ class LiveDataActivity : AppCompatActivity() {
         val handler = Handler(looper)
         this.registerReceiver(respeckLiveUpdateReceiver, filterTest, null, handler)
 
-    }
+        activityClassifier
+            .initialize()
+            .addOnFailureListener { e ->
+                Log.e(TAG, "Error setting up activity classifier.", e)
+            }
 
+    }
 
     fun setupChart() {
         chart = findViewById<LineChart>(R.id.chart)
@@ -145,18 +146,30 @@ class LiveDataActivity : AppCompatActivity() {
         dataSet_z.setDrawCircles(false)
         dataSet_mag.setDrawCircles(false)
 
-        dataSet_x.setColor(ContextCompat.getColor(this,
-            R.color.red
-        ))
-        dataSet_y.setColor(ContextCompat.getColor(this,
-            R.color.green
-        ))
-        dataSet_z.setColor(ContextCompat.getColor(this,
-            R.color.blue
-        ))
-        dataSet_mag.setColor(ContextCompat.getColor(this,
-            R.color.yellow
-        ))
+        dataSet_x.setColor(
+            ContextCompat.getColor(
+                this,
+                R.color.red
+            )
+        )
+        dataSet_y.setColor(
+            ContextCompat.getColor(
+                this,
+                R.color.green
+            )
+        )
+        dataSet_z.setColor(
+            ContextCompat.getColor(
+                this,
+                R.color.blue
+            )
+        )
+        dataSet_mag.setColor(
+            ContextCompat.getColor(
+                this,
+                R.color.yellow
+            )
+        )
 
         var dataSets = ArrayList<ILineDataSet>()
         dataSets.add(dataSet_x)
@@ -172,7 +185,9 @@ class LiveDataActivity : AppCompatActivity() {
     fun updateGraph() {
         // take the first element from the queue
         // and update the graph with it
-        val respeckData = mDelayRespeckQueue.take().getData()
+        val respeckData = mDelayRespeckQueue.take().data
+
+        val dataPointCount = findViewById<TextView>(R.id.dataPointsCount)
 
         dataSet_x.addEntry(Entry(time, respeckData.accel_x))
         dataSet_y.addEntry(Entry(time, respeckData.accel_y))
@@ -184,17 +199,41 @@ class LiveDataActivity : AppCompatActivity() {
             chart.notifyDataSetChanged()
             chart.invalidate()
             chart.setVisibleXRangeMaximum(150f)
-            Log.i("Chart", "Lowest X = " + chart.lowestVisibleX.toString())
+//            Log.i("Chart", "Lowest X = " + chart.lowestVisibleX.toString())
             chart.moveViewToX(chart.lowestVisibleX + 40)
-            Log.i("Chart", "Lowest X after = " + chart.lowestVisibleX.toString())
+//            Log.i("Chart", "Lowest X after = " + chart.lowestVisibleX.toString())
+            dataPointCount.text = getString(R.string.n_data_points, dataSet_mag.entryCount)
         }
 
     }
-
 
     override fun onDestroy() {
         super.onDestroy()
         unregisterReceiver(respeckLiveUpdateReceiver)
         looper.quit()
+    }
+
+    private fun classifyActivity(data: RespeckData) {
+//        val bitmap = drawView?.getBitmap()
+
+        if (activityClassifier.isInitialized) {
+            activityClassifier
+                .classifyAsync(data)
+                .addOnSuccessListener { (activity, conf) ->
+                    modelPredictionActivityText.text = activity
+                    modelPredictionConfidence.text = String.format("%.2f%%", 100*conf)
+                }
+                .addOnFailureListener { e ->
+                    modelPredictionActivityText.text = getString(
+                        R.string.tfe_dc_classification_error_message,
+                        e.localizedMessage
+                    )
+                    Log.e(TAG, "Error classifying activity.", e)
+                }
+        }
+    }
+
+    companion object {
+        private const val TAG = "LiveDataActivity"
     }
 }

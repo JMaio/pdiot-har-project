@@ -61,7 +61,7 @@ public class Utils {
 
             long uncorrectedRESpeckTimestamp = ((long) buffer.getInt()) & 0xffffffffL;
             long newRESpeckTimestamp = uncorrectedRESpeckTimestamp * 197 * 1000 / 32768;
-            Log.i("RESpeckPacketHandler", "Respeck timestamp (ms): " + Long.toString(newRESpeckTimestamp));
+            Log.d("RESpeckPacketHandler", "Respeck timestamp (ms): " + Long.toString(newRESpeckTimestamp));
             frequencyTimestampsRespeck.add(newRESpeckTimestamp);
 
             // get the packet sequence number.
@@ -69,7 +69,7 @@ public class Utils {
             // so we'll all be long dead by the time it wraps!
 
             int seqNumber  = ((int)buffer.getShort()) & 0xffff;
-            Log.i("RESpeckPacketHandler", "Respeck seq number: " + Integer.toString(seqNumber));
+            Log.d("RESpeckPacketHandler", "Respeck seq number: " + Integer.toString(seqNumber));
 
             if (last_seq_number >= 0 && seqNumber - last_seq_number != 1) {
                 // have we just wrapped?
@@ -89,11 +89,11 @@ public class Utils {
 
             // Read battery level and charging status
             byte battLevel  = values[6];
-            Log.i("RESpeckPacketHandler", "Respeck battery level: " + Byte.toString(battLevel) + "%");
+            Log.d("RESpeckPacketHandler", "Respeck battery level: " + Byte.toString(battLevel) + "%");
 
             boolean chargingStatus = false;
             if (values[7] == (byte)0x01) chargingStatus = true;
-            Log.i("RESpeckPacketHandler", "Respeck charging?: " + Boolean.toString(chargingStatus));
+            Log.d("RESpeckPacketHandler", "Respeck charging?: " + Boolean.toString(chargingStatus));
 
             final long actualPhoneTimestamp = System.currentTimeMillis();
 
@@ -124,14 +124,14 @@ public class Utils {
             frequencyTimestampsPhone.add(now);
 
             currentProcessedMinute = TimeUnit.MILLISECONDS.toMinutes(now);
-            Log.i("Debug", "current min = " + currentProcessedMinute);
+            Log.d("processRESpeckPacket", "current min = " + currentProcessedMinute);
 
             if(currentProcessedMinute != lastProcessedMinute && lastProcessedMinute != -1) {
                 float currentRespeckFreq = calculateRespeckFrequency();
-                Log.i("Debug", "current freq = " + currentRespeckFreq);
+                Log.d("processRESpeckPacket", "current freq = " + currentRespeckFreq);
 
                 float currentPhoneFreq = calculatePhoneFrequency();
-                Log.i("Debug", "current freq = " + currentPhoneFreq);
+                Log.d("processRESpeckPacket", "current freq = " + currentPhoneFreq);
             }
 
             long interpolatedPhoneTimestamp = (long) ((mPhoneTimestampCurrentPacketReceived - mPhoneTimestampLastPacketReceived) *
@@ -141,7 +141,7 @@ public class Utils {
             final float y = combineAccelerationBytes(values[i + 2], values[i + 3]);
             final float z = combineAccelerationBytes(values[i + 4], values[i + 5]);
 
-            Log.i("Debug", "(x = " + x + ", y = " + y + ", z = " + z + ")");
+            Log.d("processRESpeckPacket", "(x = " + x + ", y = " + y + ", z = " + z + ")");
 
             Intent liveDataIntent = new Intent(Constants.ACTION_INNER_RESPECK_BROADCAST);
             liveDataIntent.putExtra(Constants.EXTRA_RESPECK_LIVE_X, x);
@@ -192,7 +192,7 @@ public class Utils {
         long last_ts = frequencyTimestampsRespeck.get(num_freq - 1);
 
         float samplingFreq = ((num_freq * 1.f) / (last_ts - first_ts)) * 1000.f;
-        Log.i("Debug", "samplingFrequencyRespeck = " + samplingFreq);
+        Log.d("processRESpeckPacket", "samplingFrequencyRespeck = " + samplingFreq);
 
         frequencyTimestampsRespeck.clear();
 
@@ -210,7 +210,7 @@ public class Utils {
         long last_ts = frequencyTimestampsPhone.get(num_freq - 1);
 
         float samplingFreq = ((num_freq * 1.f) / (last_ts - first_ts)) * 1000.f;
-        Log.i("Debug", "samplingFrequencyPhone = " + samplingFreq);
+        Log.d("processRESpeckPacket", "samplingFrequencyPhone = " + samplingFreq);
 
         frequencyTimestampsPhone.clear();
 
