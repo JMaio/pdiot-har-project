@@ -21,6 +21,7 @@ import com.specknet.pdiotapp.utils.DelayRespeck
 import com.specknet.pdiotapp.R
 import com.specknet.pdiotapp.utils.RespeckData
 import com.specknet.pdiotapp.utils.Constants
+import kotlinx.android.synthetic.main.activity_live_data.*
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.DelayQueue
 import kotlin.collections.ArrayList
@@ -53,10 +54,12 @@ class LiveDataActivity : AppCompatActivity() {
         setContentView(R.layout.activity_live_data)
 
         // get the accel fields
-        var accel_x = findViewById<TextView>(R.id.breathing_rate_sec)
-        var accel_y = findViewById<TextView>(R.id.breathing_rate_min)
-        var accel_z = findViewById<TextView>(R.id.breathing_signal)
+        var accel_x = findViewById<TextView>(R.id.accel_x)
+        var accel_y = findViewById<TextView>(R.id.accel_y)
+        var accel_z = findViewById<TextView>(R.id.accel_z)
+        var magTextView = findViewById<TextView>(R.id.magTextView)
 
+        var modelPredictionText = findViewById<TextView>(R.id.modelPredictionText)
 
         setupChart()
 
@@ -93,11 +96,17 @@ class LiveDataActivity : AppCompatActivity() {
                         )
                     mDelayRespeckQueue.add(delayRespeck)
 
+//                    probably run tf here
+
+                    val prediction = if (mag > 1.0) "Running" else "Sitting"
 
                     runOnUiThread {
-                        accel_x.text = "accel_x = " + x.toString()
-                        accel_y.text = "accel_y = " + y.toString()
-                        accel_z.text = "accel_z = " + z.toString()
+                        accel_x.text = "${getString(R.string.accel_x)} = $x"
+                        accel_y.text = "${getString(R.string.accel_y)} = $y"
+                        accel_z.text = "${getString(R.string.accel_z)} = $z"
+                        magTextView.text = "${getString(R.string.mag)} = $mag"
+
+                        modelPredictionText.text = prediction
                     }
 
                     time += 1

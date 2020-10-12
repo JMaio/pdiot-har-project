@@ -42,4 +42,13 @@
     <string name="section_format">Page %1$d</string>
     <string name="action_add">Add</string>
     <string name="android_desserts">Android Desserts</string>
+
+    <!-- Extracted string resources   -->
+    <string name="test_your_models_with_the_live_app">Test your models with the live app!</string>
+    <string name="accel_x">accel_x</string>
+    <string name="accel_y">accel_y</string>
+    <string name="accel_z">accel_z</string>
+    <string name="model_prediction">Model prediction</string>
+    <string name="ellipsis">&#x2026;</string>
+    <string name="mag">mag</string>
 </resources>
