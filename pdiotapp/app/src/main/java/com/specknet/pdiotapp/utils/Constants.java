@@ -1,5 +1,7 @@
 package com.specknet.pdiotapp.utils;
 
+import java.sql.Array;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -127,6 +129,23 @@ public class Constants {
         put(11, 12);   // "Climbing stairs",
         put(12, 13);   // "Descending stairs",
         put(13, 31);   // "Desk work"
+    }};
+
+    public static final ArrayList<String> AVAILABLE_ACTIVITIES = new ArrayList<String>() {{
+        add("Sitting");
+        add("Sitting bent forward");
+        add("Sitting bent backward");
+        add("Walking at normal speed");
+        add("Standing");
+        add("Lying down on back");
+        add("Lying down left");
+        add("Lying down right");
+        add("Lying down on stomach");
+        add("Movement");
+        add("Running");
+        add("Climbing stairs");
+        add("Descending stairs");
+        add("Desk work");
     }};
 
     public static final String PREF_USER_FIRST_TIME = "user_first_time";

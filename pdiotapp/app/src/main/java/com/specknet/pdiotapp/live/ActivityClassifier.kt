@@ -2,9 +2,7 @@ package com.specknet.pdiotapp.live
 
 import android.content.Context
 import android.content.res.AssetManager
-import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresApi
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.TaskCompletionSource
 import com.specknet.pdiotapp.utils.Constants
@@ -80,7 +78,11 @@ class ActivityClassifier(private val context: Context) {
         return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
     }
 
-    private fun classify(data: RespeckData): ClassificationResult {
+    class ClassificationResults(val list: List<ClassificationResult>) {
+        val max: ClassificationResult = list[list.indices.maxBy { i -> list.map { (_, c) -> c }[i] }?: -1]
+    }
+
+    private fun classify(data: RespeckData): ClassificationResults {
         if (!isInitialized) {
             throw IllegalStateException("TF Lite Interpreter is not initialized yet.")
         }
@@ -88,38 +90,27 @@ class ActivityClassifier(private val context: Context) {
 
         val byteBuffer = respeckDataToModelInput(data)
 
-        var startTime: Long
         var elapsedTime: Long
-//
-//        // Preprocessing: resize the input
-//        startTime = System.nanoTime()
-//        val resizedImage = Bitmap.createScaledBitmap(bitmap, inputImageWidth, inputImageHeight, true)
-//        val byteBuffer = convertBitmapToByteBuffer(resizedImage)
-//        elapsedTime = (System.nanoTime() - startTime) / 1000000
-//        Log.d(TAG, "Preprocessing time = " + elapsedTime + "ms")
-
-        startTime = System.nanoTime()
+        var startTime = System.nanoTime()
         val result = Array(1) { FloatArray(OUTPUT_CLASSES_COUNT) }
         // run interpreter, return results to array
         interpreter?.run(byteBuffer, result)
         elapsedTime = (System.nanoTime() - startTime) / 1000000
         Log.d(TAG, "Inference time = " + elapsedTime + "ms")
-//
-        val output = result[0]
-        val maxIndex = output.indices.maxBy { output[it] } ?: -1
-        val activityCode: Int? = Constants.TFCODE_TO_ACTIVITY_CODE[maxIndex]
-        val activityName: String = Constants.ACTIVITY_CODE_TO_NAME_MAPPING.getOrDefault(activityCode, "Unknown")
-        return Pair(
-            activityName,
-            output[maxIndex]
-        )
-//        return getOutputString(result[0])
+
+        return ClassificationResults(result[0].mapIndexed { i, f ->
+            Log.d(TAG, "inference: ${Constants.TFCODE_TO_ACTIVITY_CODE[i]} => $f")
+            ClassificationResult(
+                Constants.ACTIVITY_CODE_TO_NAME_MAPPING
+                    .getOrDefault(Constants.TFCODE_TO_ACTIVITY_CODE[i], "Unknown"),
+                f
+            )
+        })
     }
 
     fun respeckDataToModelInput(data: RespeckData): ByteBuffer {
         val byteBuffer = ByteBuffer.allocateDirect(FLOAT_TYPE_SIZE * MODEL_INPUT_SIZE)
         byteBuffer.order(ByteOrder.nativeOrder())
-        // acceleration data might be out of bounds? not the right format?
         byteBuffer.apply {
             putFloat(data.accel_x)
             putFloat(data.accel_y)
@@ -128,8 +119,8 @@ class ActivityClassifier(private val context: Context) {
         return byteBuffer
     }
 
-    fun classifyAsync(data: RespeckData): Task<ClassificationResult> {
-        val task = TaskCompletionSource<ClassificationResult>()
+    fun classifyAsync(data: RespeckData): Task<ClassificationResults> {
+        val task = TaskCompletionSource<ClassificationResults>()
         executorService.execute {
             val result = classify(data)
             task.setResult(result)
@@ -144,11 +135,6 @@ class ActivityClassifier(private val context: Context) {
         }
     }
 
-    private fun getOutputString(output: FloatArray): String {
-        val maxIndex = output.indices.maxBy { output[it] } ?: -1
-        return "%s\nConfidence: %2f".format(maxIndex, output[maxIndex])
-    }
-
     companion object {
         private const val TAG = "ActivityClassifier"
 
@@ -160,9 +146,9 @@ class ActivityClassifier(private val context: Context) {
 
         // floats are 4 bytes!
         private const val FLOAT_TYPE_SIZE = 4
-        // TODO: update depending on time window duration
+        // TODO: update depending on time window duration?
         private const val MODEL_INPUT_SIZE = 3
 
-        private const val OUTPUT_CLASSES_COUNT = 14
+        const val OUTPUT_CLASSES_COUNT = 14
     }
 }
