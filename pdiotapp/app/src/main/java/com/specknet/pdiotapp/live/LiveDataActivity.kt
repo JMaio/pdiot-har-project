@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
@@ -244,7 +245,7 @@ class LiveDataActivity : AppCompatActivity() {
         recyclerViewManager = object : LinearLayoutManager(this) {
             override fun canScrollVertically(): Boolean = false
         }
-        recyclerViewAdapter = ActivityRecyclerAdapter(dummyClassificationResults.list)
+        recyclerViewAdapter = ActivityRecyclerAdapter(dummyClassificationResults)
 
         recyclerView = findViewById<RecyclerView>(R.id.activityTypesRecyclerView).apply {
             // use this setting to improve performance if you know that changes
@@ -257,7 +258,7 @@ class LiveDataActivity : AppCompatActivity() {
         }
     }
 
-    class ActivityRecyclerAdapter(private val activities: List<ClassificationResult>) :
+    class ActivityRecyclerAdapter(private val activities: ActivityClassifier.ClassificationResults) :
         RecyclerView.Adapter<ActivityRecyclerAdapter.ActivityRecyclerViewHolder>() {
 
         // Provide a reference to the views for each data item
@@ -290,9 +291,18 @@ class LiveDataActivity : AppCompatActivity() {
             // - get element from your dataset at this position
             // - replace the contents of the view with that element
             holder.apply {
-                activities[position].let { (name, c) ->
+                activities.list[position].let { (name, c) ->
                     activityName.text = name
-                    confidenceIndicator.progress = (c * 100).roundToInt()
+                    confidenceIndicator.apply {
+                        progress = (c * 100).roundToInt()
+                        progressTintList = ColorStateList.valueOf(
+                            if (position == activities.maxI) {
+                                resources.getColor(R.color.accent_500, null)
+                            } else {
+                                resources.getColor(R.color.primary_500, null)
+                            }
+                        )
+                    }
                     Log.d(TAG, "activity - ${name} - ${c}")
                 }
             }
@@ -300,7 +310,7 @@ class LiveDataActivity : AppCompatActivity() {
 
         // Return the size of your dataset (invoked by the layout manager)
         override fun getItemCount(): Int {
-            return activities.size
+            return activities.list.size
         }
     }
 
@@ -317,7 +327,7 @@ class LiveDataActivity : AppCompatActivity() {
                 .classifyAsync(data)
                 .addOnSuccessListener { res ->
                     Log.d(TAG, "updated classification results")
-                    recyclerView.adapter = ActivityRecyclerAdapter(res.list)
+                    recyclerView.adapter = ActivityRecyclerAdapter(res)
                     res.max.let { (name, c) ->
                         modelPredictionActivityText.text = name
                         modelPredictionConfidence.text = String.format("%.2f%%", 100*c)

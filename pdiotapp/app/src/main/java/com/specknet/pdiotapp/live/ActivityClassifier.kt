@@ -82,7 +82,8 @@ class ActivityClassifier(private val context: Context) {
     }
 
     class ClassificationResults(val list: List<ClassificationResult>) {
-        val max: ClassificationResult = list[list.indices.maxBy { i -> list.map { (_, c) -> c }[i] }?: -1]
+        val maxI: Int = list.indices.maxBy { i -> list.map { (_, c) -> c }[i] }?: -1
+        val max: ClassificationResult = list[maxI]
     }
 
     private fun classify(data: List<RespeckData>): ClassificationResults {
@@ -90,10 +91,6 @@ class ActivityClassifier(private val context: Context) {
             throw IllegalStateException("TF Lite Interpreter is not initialized yet.")
         }
         Log.d(TAG, "Starting classification...")
-
-        if (data.size != windowSize) {
-            // pad with zeroes?
-        }
 
         val byteBuffer = respeckDataToModelInput(data)
 
