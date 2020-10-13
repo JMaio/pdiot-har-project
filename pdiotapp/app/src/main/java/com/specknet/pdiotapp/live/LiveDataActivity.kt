@@ -294,6 +294,7 @@ class LiveDataActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         unregisterReceiver(respeckLiveUpdateReceiver)
+        activityClassifier.close()
         looper.quit()
     }
 
