@@ -60,12 +60,12 @@ class ActivityClassifier(private val context: Context) {
         val interpreter = Interpreter(model, options)
 
         // Read input shape from model file
-//        val inputShape = interpreter.getInputTensor(0).shape()
+        val inputShape = interpreter.getInputTensor(0).shape()
 
         // Finish interpreter initialization
         this.interpreter = interpreter
         isInitialized = true
-        Log.d(TAG, "Initialized TFLite interpreter.")
+        Log.i(TAG, "Initialized TFLite interpreter with input shape = ${inputShape.map { i -> i.toString() }}")
     }
 
     @Throws(IOException::class)
@@ -86,7 +86,7 @@ class ActivityClassifier(private val context: Context) {
         if (!isInitialized) {
             throw IllegalStateException("TF Lite Interpreter is not initialized yet.")
         }
-        Log.i(TAG, "Starting classification...")
+        Log.d(TAG, "Starting classification...")
 
         val byteBuffer = respeckDataToModelInput(data)
 
