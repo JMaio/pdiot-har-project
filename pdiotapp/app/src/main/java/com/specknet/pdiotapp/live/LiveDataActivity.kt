@@ -23,10 +23,12 @@ import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
+import com.google.common.collect.EvictingQueue
 import com.specknet.pdiotapp.R
 import com.specknet.pdiotapp.utils.Constants
 import com.specknet.pdiotapp.utils.DelayRespeck
 import com.specknet.pdiotapp.utils.RespeckData
+import com.specknet.pdiotapp.utils.zeroRespeckData
 import kotlinx.android.synthetic.main.activity_live_data.*
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.DelayQueue
@@ -58,6 +60,10 @@ class LiveDataActivity : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var recyclerViewAdapter: RecyclerView.Adapter<*>
     private lateinit var recyclerViewManager: RecyclerView.LayoutManager
+
+    // EvictingQueue from Guava, alternative could be Apache CircularFifoQueue
+    private lateinit var respeckDataQueue: EvictingQueue<RespeckData>
+
     private var dummyClassificationResults = ActivityClassifier.ClassificationResults(
         (0 until ActivityClassifier.OUTPUT_CLASSES_COUNT).mapIndexed { _, i ->
             ClassificationResult(
@@ -83,6 +89,19 @@ class LiveDataActivity : AppCompatActivity() {
         val accelZ = findViewById<TextView>(R.id.accel_z)
         val magTextView = findViewById<TextView>(R.id.magTextView)
 
+        activityClassifier
+            .initialize()
+            .addOnSuccessListener {
+                val w = activityClassifier.windowSize
+                respeckDataQueue = EvictingQueue.create(w)
+                // fill with zero packets
+                respeckDataQueue.addAll((1..w).map { zeroRespeckData })
+            }
+            .addOnFailureListener { e ->
+                Log.e(TAG, "Error setting up activity classifier.", e)
+            }
+
+
         setupChart()
 
         setupRecyclerView()
@@ -93,14 +112,12 @@ class LiveDataActivity : AppCompatActivity() {
 //                Log.i("thread", "I am running on thread = " + Thread.currentThread().name)
                 val action = intent.action
                 if (action == Constants.ACTION_INNER_RESPECK_BROADCAST) {
-
                     // get all relevant intent contents
                     val x = intent.getFloatExtra(Constants.EXTRA_RESPECK_LIVE_X, 0f)
                     val y = intent.getFloatExtra(Constants.EXTRA_RESPECK_LIVE_Y, 0f)
                     val z = intent.getFloatExtra(Constants.EXTRA_RESPECK_LIVE_Z, 0f)
 
                     val mag = sqrt((x * x + y * y + z * z).toDouble())
-
                     val data =
                         RespeckData(
                             timestamp = 0L,
@@ -116,8 +133,10 @@ class LiveDataActivity : AppCompatActivity() {
                             79
                         )
                     mDelayRespeckQueue.add(delayRespeck)
+                    respeckDataQueue.add(data)
+                    Log.d(TAG, "respeckDataQueue head = ${respeckDataQueue.peek()}")
 
-                    classifyActivity(data)
+                    classifyActivity(respeckDataQueue.toList())
 
                     runOnUiThread {
                         accelX.text = "${getString(R.string.accel_x)} = ${x}"
@@ -137,12 +156,6 @@ class LiveDataActivity : AppCompatActivity() {
         looper = handlerThread.looper
         val handler = Handler(looper)
         this.registerReceiver(respeckLiveUpdateReceiver, filterTest, null, handler)
-
-        activityClassifier
-            .initialize()
-            .addOnFailureListener { e ->
-                Log.e(TAG, "Error setting up activity classifier.", e)
-            }
     }
 
     fun setupChart() {
@@ -298,7 +311,7 @@ class LiveDataActivity : AppCompatActivity() {
         looper.quit()
     }
 
-    private fun classifyActivity(data: RespeckData) {
+    private fun classifyActivity(data: List<RespeckData>) {
         if (activityClassifier.isInitialized) {
             activityClassifier
                 .classifyAsync(data)

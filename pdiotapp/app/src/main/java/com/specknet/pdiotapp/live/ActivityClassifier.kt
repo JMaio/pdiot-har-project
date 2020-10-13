@@ -29,9 +29,8 @@ class ActivityClassifier(private val context: Context) {
     /** Executor to run inference task in the background */
     private val executorService: ExecutorService = Executors.newCachedThreadPool()
 
-//    private var x: Float = 0f // will be inferred from TF Lite model
-//    private var y: Float = 0f // will be inferred from TF Lite model
-//    private var z: Float = 0f // will be inferred from TF Lite model
+    var windowSize: Int = 0 // will be inferred from TF Lite model
+    var modelInputSize: Int = 0 // will be inferred from TF Lite model
 
     fun initialize(): Task<Void> {
         val task = TaskCompletionSource<Void>()
@@ -61,6 +60,10 @@ class ActivityClassifier(private val context: Context) {
 
         // Read input shape from model file
         val inputShape = interpreter.getInputTensor(0).shape()
+        // looks like [1, 100, 3] - [1][window size][xyz]
+        windowSize = inputShape[1]
+        // modelInputSize = windowSize * 3 floats * 4 bytes / float
+        modelInputSize = windowSize * XYZ_TYPE_SIZE * FLOAT_TYPE_SIZE
 
         // Finish interpreter initialization
         this.interpreter = interpreter
@@ -82,11 +85,15 @@ class ActivityClassifier(private val context: Context) {
         val max: ClassificationResult = list[list.indices.maxBy { i -> list.map { (_, c) -> c }[i] }?: -1]
     }
 
-    private fun classify(data: RespeckData): ClassificationResults {
+    private fun classify(data: List<RespeckData>): ClassificationResults {
         if (!isInitialized) {
             throw IllegalStateException("TF Lite Interpreter is not initialized yet.")
         }
         Log.d(TAG, "Starting classification...")
+
+        if (data.size != windowSize) {
+            // pad with zeroes?
+        }
 
         val byteBuffer = respeckDataToModelInput(data)
 
@@ -108,18 +115,20 @@ class ActivityClassifier(private val context: Context) {
         })
     }
 
-    fun respeckDataToModelInput(data: RespeckData): ByteBuffer {
-        val byteBuffer = ByteBuffer.allocateDirect(FLOAT_TYPE_SIZE * MODEL_INPUT_SIZE)
+    fun respeckDataToModelInput(data: List<RespeckData>): ByteBuffer {
+        val byteBuffer = ByteBuffer.allocateDirect(modelInputSize)
         byteBuffer.order(ByteOrder.nativeOrder())
         byteBuffer.apply {
-            putFloat(data.accel_x)
-            putFloat(data.accel_y)
-            putFloat(data.accel_z)
+            data.map { d ->
+                putFloat(d.accel_x)
+                putFloat(d.accel_y)
+                putFloat(d.accel_z)
+            }
         }
         return byteBuffer
     }
 
-    fun classifyAsync(data: RespeckData): Task<ClassificationResults> {
+    fun classifyAsync(data: List<RespeckData>): Task<ClassificationResults> {
         val task = TaskCompletionSource<ClassificationResults>()
         executorService.execute {
             val result = classify(data)
@@ -138,16 +147,15 @@ class ActivityClassifier(private val context: Context) {
     companion object {
         private const val TAG = "ActivityClassifier"
 
-        private const val MODEL_FILE = "har_v0.0.tflite"
+        private const val MODEL_FILE = "cnn_model_0.tflite"
 
 
-//        private const val FLOAT_TYPE_SIZE = 4
 //        private const val PIXEL_SIZE = 1
 
         // floats are 4 bytes!
         private const val FLOAT_TYPE_SIZE = 4
         // TODO: update depending on time window duration?
-        private const val MODEL_INPUT_SIZE = 3
+        private const val XYZ_TYPE_SIZE = 3
 
         const val OUTPUT_CLASSES_COUNT = 14
     }
