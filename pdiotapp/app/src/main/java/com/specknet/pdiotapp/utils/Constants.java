@@ -1,5 +1,7 @@
 package com.specknet.pdiotapp.utils;
 
+import java.sql.Array;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -110,6 +112,40 @@ public class Constants {
         put(18, "Singing");
         put(19, "Laughing");
         put(20, "Breathing");
+    }};
+
+    public static final Map<Integer, Integer> TFCODE_TO_ACTIVITY_CODE = new HashMap<Integer, Integer>() {{
+        put(0,  0);    // "Sitting",
+        put(1,  4);    // "Sitting bent forward",
+        put(2,  5);    // "Sitting bent backward",
+        put(3,  1);    // "Walking at normal speed",
+        put(4,  100);  // "Standing",
+        put(5,  2);    // "Lying down on back",
+        put(6,  7);    // "Lying down left",
+        put(7,  6);    // "Lying down right",
+        put(8,  8);    // "Lying down on stomach",
+        put(9,  9);    // "Movement",
+        put(10, 11);   // "Running",
+        put(11, 12);   // "Climbing stairs",
+        put(12, 13);   // "Descending stairs",
+        put(13, 31);   // "Desk work"
+    }};
+
+    public static final ArrayList<String> AVAILABLE_ACTIVITIES = new ArrayList<String>() {{
+        add("Sitting");
+        add("Sitting bent forward");
+        add("Sitting bent backward");
+        add("Walking at normal speed");
+        add("Standing");
+        add("Lying down on back");
+        add("Lying down left");
+        add("Lying down right");
+        add("Lying down on stomach");
+        add("Movement");
+        add("Running");
+        add("Climbing stairs");
+        add("Descending stairs");
+        add("Desk work");
     }};
 
     public static final String PREF_USER_FIRST_TIME = "user_first_time";

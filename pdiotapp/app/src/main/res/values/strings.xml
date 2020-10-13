@@ -48,7 +48,10 @@
     <string name="accel_x">accel_x</string>
     <string name="accel_y">accel_y</string>
     <string name="accel_z">accel_z</string>
+    <string name="mag">mag</string>
     <string name="model_prediction">Model prediction</string>
     <string name="ellipsis">&#x2026;</string>
-    <string name="mag">mag</string>
+    <string name="n_data_points">%1$d data points</string>
+    <string name="data_points">… data points</string>
+    <string name="tfe_dc_classification_error_message">Error classifying activity: %s</string>
 </resources>
