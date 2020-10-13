@@ -59,7 +59,7 @@ class LiveDataActivity : AppCompatActivity() {
     private lateinit var recyclerViewAdapter: RecyclerView.Adapter<*>
     private lateinit var recyclerViewManager: RecyclerView.LayoutManager
     private var dummyClassificationResults = ActivityClassifier.ClassificationResults(
-        (0..ActivityClassifier.OUTPUT_CLASSES_COUNT).mapIndexed { _, i ->
+        (0 until ActivityClassifier.OUTPUT_CLASSES_COUNT).mapIndexed { _, i ->
             ClassificationResult(
                 Constants.ACTIVITY_CODE_TO_NAME_MAPPING
                     .getOrDefault(Constants.TFCODE_TO_ACTIVITY_CODE[i], "Unknown"),
