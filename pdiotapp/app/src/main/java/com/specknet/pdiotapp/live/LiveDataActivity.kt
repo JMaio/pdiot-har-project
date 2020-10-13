@@ -13,8 +13,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ProgressBar
-import android.widget.TextView
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -58,6 +57,9 @@ class LiveDataActivity : AppCompatActivity() {
 
     val filterTest = IntentFilter(Constants.ACTION_INNER_RESPECK_BROADCAST)
 
+    private lateinit var modelSelector: Spinner
+    private lateinit var models: List<String>
+
     private lateinit var recyclerView: RecyclerView
     private lateinit var recyclerViewAdapter: RecyclerView.Adapter<*>
     private lateinit var recyclerViewManager: RecyclerView.LayoutManager
@@ -89,6 +91,37 @@ class LiveDataActivity : AppCompatActivity() {
         val accelY = findViewById<TextView>(R.id.accel_y)
         val accelZ = findViewById<TextView>(R.id.accel_z)
         val magTextView = findViewById<TextView>(R.id.magTextView)
+
+        modelSelector = findViewById(R.id.modelSelectionSpinner)
+
+        val assetManager = baseContext.assets
+
+//        Log.i(TAG, "assets: ${assets.list("")?.map { s -> s }}")
+        // grab files with tflite extensions
+        models = assets.list("")?.filter { f -> f.endsWith(".tflite") }.orEmpty()
+        Log.i(TAG, "models found: $models")
+
+        // https://stackoverflow.com/q/60430697/9184658
+        val modelChoiceAdapter = ArrayAdapter<String>(
+            this,
+            android.R.layout.simple_spinner_dropdown_item,
+            models
+        )
+        modelSelector.apply {
+            adapter = modelChoiceAdapter
+            onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(
+                    parent: AdapterView<*>?,
+                    view: View?,
+                    position: Int,
+                    id: Long
+                ) {
+                    // TODO
+                }
+
+                override fun onNothingSelected(parent: AdapterView<*>?) {}
+            }
+        }
 
         activityClassifier
             .initialize()
