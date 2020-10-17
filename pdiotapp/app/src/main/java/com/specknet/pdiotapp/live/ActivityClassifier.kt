@@ -32,11 +32,11 @@ class ActivityClassifier(private val context: Context) {
     var windowSize: Int = 0 // will be inferred from TF Lite model
     var modelInputSize: Int = 0 // will be inferred from TF Lite model
 
-    fun initialize(): Task<Void> {
+    fun initialize(modelFile: String): Task<Void> {
         val task = TaskCompletionSource<Void>()
         executorService.execute {
             try {
-                initializeInterpreter()
+                initializeInterpreter(modelFile)
                 task.setResult(null)
             } catch (e: IOException) {
                 task.setException(e)
@@ -46,10 +46,10 @@ class ActivityClassifier(private val context: Context) {
     }
 
     @Throws(IOException::class)
-    private fun initializeInterpreter() {
+    private fun initializeInterpreter(modelFile: String) {
         // Load the TF Lite model
         val assetManager = context.assets
-        val model = loadModelFile(assetManager)
+        val model = loadModelFile(assetManager, modelFile)
 
         // Initialize TF Lite Interpreter with NNAPI enabled
         val options = Interpreter.Options().apply {
@@ -68,12 +68,12 @@ class ActivityClassifier(private val context: Context) {
         // Finish interpreter initialization
         this.interpreter = interpreter
         isInitialized = true
-        Log.i(TAG, "Initialized TFLite interpreter with input shape = ${inputShape.map { i -> i.toString() }}")
+        Log.i(TAG, "Initialized TFLite interpreter with model '$modelFile'; input shape = ${inputShape.map { i -> i.toString() }}")
     }
 
     @Throws(IOException::class)
-    private fun loadModelFile(assetManager: AssetManager): ByteBuffer {
-        val fileDescriptor = assetManager.openFd(MODEL_FILE)
+    private fun loadModelFile(assetManager: AssetManager, modelFile: String): ByteBuffer {
+        val fileDescriptor = assetManager.openFd(modelFile)
         val inputStream = FileInputStream(fileDescriptor.fileDescriptor)
         val fileChannel = inputStream.channel
         val startOffset = fileDescriptor.startOffset
