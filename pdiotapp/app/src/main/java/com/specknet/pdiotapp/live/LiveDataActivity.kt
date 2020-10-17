@@ -23,6 +23,7 @@ import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
+import com.google.android.material.snackbar.Snackbar
 import com.google.common.collect.EvictingQueue
 import com.specknet.pdiotapp.R
 import com.specknet.pdiotapp.utils.Constants
@@ -47,7 +48,7 @@ class LiveDataActivity : AppCompatActivity() {
     lateinit var dataSet_z: LineDataSet
     lateinit var dataSet_mag: LineDataSet
 
-    var time = 0f
+    var time = 0
     lateinit var allAccelData: LineData
     lateinit var chart: LineChart
 
@@ -65,7 +66,8 @@ class LiveDataActivity : AppCompatActivity() {
     private lateinit var recyclerViewManager: RecyclerView.LayoutManager
 
     // EvictingQueue from Guava, alternative could be Apache CircularFifoQueue
-    private lateinit var respeckDataQueue: EvictingQueue<RespeckData>
+    // initialize zero-size queue to prevent errors
+    private var respeckDataQueue: EvictingQueue<RespeckData> = EvictingQueue.create(0)
 
     private var dummyClassificationResults = ActivityClassifier.ClassificationResults(
         (0 until ActivityClassifier.OUTPUT_CLASSES_COUNT).mapIndexed { _, i ->
@@ -116,24 +118,29 @@ class LiveDataActivity : AppCompatActivity() {
                     position: Int,
                     id: Long
                 ) {
-                    // TODO
+                    Snackbar.make(
+                        modelPredictionActivityText,
+                        "Selected model '${adapter.getItem(position)}'",
+                        Snackbar.LENGTH_SHORT
+                    ).show()
+                    activityClassifier
+                        .initialize(adapter.getItem(position) as String)
+                        .addOnSuccessListener {
+                            val w = activityClassifier.windowSize
+                            respeckDataQueue = EvictingQueue.create(w)
+                            // fill with zero packets
+                            respeckDataQueue.addAll((1..w).map { zeroRespeckData })
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e(TAG, "Error setting up activity classifier.", e)
+                        }
                 }
 
                 override fun onNothingSelected(parent: AdapterView<*>?) {}
             }
         }
 
-        activityClassifier
-            .initialize()
-            .addOnSuccessListener {
-                val w = activityClassifier.windowSize
-                respeckDataQueue = EvictingQueue.create(w)
-                // fill with zero packets
-                respeckDataQueue.addAll((1..w).map { zeroRespeckData })
-            }
-            .addOnFailureListener { e ->
-                Log.e(TAG, "Error setting up activity classifier.", e)
-            }
+
 
 
         setupChart()
@@ -170,14 +177,18 @@ class LiveDataActivity : AppCompatActivity() {
                     respeckDataQueue.add(data)
                     Log.d(TAG, "respeckDataQueue head = ${respeckDataQueue.peek()}")
 
-                    classifyActivity(respeckDataQueue.toList())
+                    if (time % 5 == 0) {
+                        // only update every 5 data points
+                        classifyActivity(respeckDataQueue.toList())
 
-                    runOnUiThread {
-                        accelX.text = "${getString(R.string.accel_x)} = ${x}"
-                        accelY.text = "${getString(R.string.accel_y)} = ${y}"
-                        accelZ.text = "${getString(R.string.accel_z)} = ${z}"
-                        magTextView.text = "${getString(R.string.mag)} = ${mag}"
+                        runOnUiThread {
+                            accelX.text = "${getString(R.string.accel_x)} = ${String.format("%.4f", x)}"
+                            accelY.text = "${getString(R.string.accel_y)} = ${String.format("%.4f", y)}"
+                            accelZ.text = "${getString(R.string.accel_z)} = ${String.format("%.4f", z)}"
+                            magTextView.text = "${getString(R.string.mag)} = ${String.format("%.4f", mag)}"
+                        }
                     }
+
                     time += 1
                     updateGraph()
                 }
@@ -195,7 +206,7 @@ class LiveDataActivity : AppCompatActivity() {
     fun setupChart() {
         chart = findViewById<LineChart>(R.id.chart)
 
-        time = 0f
+        time = 0
         var entries_x = ArrayList<Entry>()
         var entries_y = ArrayList<Entry>()
         var entries_z = ArrayList<Entry>()
@@ -252,12 +263,14 @@ class LiveDataActivity : AppCompatActivity() {
         // and update the graph with it
         val respeckData = mDelayRespeckQueue.take().data
 
-        val dataPointCount = findViewById<TextView>(R.id.dataPointsCount)
+//        val dataPointCount = findViewById<TextView>(R.id.dataPointsCount)
 
-        dataSet_x.addEntry(Entry(time, respeckData.accel_x))
-        dataSet_y.addEntry(Entry(time, respeckData.accel_y))
-        dataSet_z.addEntry(Entry(time, respeckData.accel_z))
-        dataSet_mag.addEntry(Entry(time, respeckData.accel_mag))
+        val tf = time.toFloat()
+
+        dataSet_x.addEntry(Entry(tf, respeckData.accel_x))
+        dataSet_y.addEntry(Entry(tf, respeckData.accel_y))
+        dataSet_z.addEntry(Entry(tf, respeckData.accel_z))
+        dataSet_mag.addEntry(Entry(tf, respeckData.accel_mag))
 
         runOnUiThread {
             allAccelData.notifyDataChanged()
@@ -267,7 +280,7 @@ class LiveDataActivity : AppCompatActivity() {
 //            Log.i("Chart", "Lowest X = " + chart.lowestVisibleX.toString())
             chart.moveViewToX(chart.lowestVisibleX + 40)
 //            Log.i("Chart", "Lowest X after = " + chart.lowestVisibleX.toString())
-            dataPointCount.text = getString(R.string.n_data_points, dataSet_mag.entryCount)
+//            dataPointCount.text = getString(R.string.n_data_points, dataSet_mag.entryCount)
         }
 
     }
