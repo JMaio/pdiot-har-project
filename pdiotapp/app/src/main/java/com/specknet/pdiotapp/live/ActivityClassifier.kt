@@ -138,7 +138,7 @@ class ActivityClassifier(private val context: Context) {
     companion object {
         private const val TAG = "ActivityClassifier"
 
-        private const val MODEL_FILE = "har_v0.0.tflite"
+        private const val MODEL_FILE = "cnn_model_no_standardisation.tflite"
 
 
 //        private const val FLOAT_TYPE_SIZE = 4
