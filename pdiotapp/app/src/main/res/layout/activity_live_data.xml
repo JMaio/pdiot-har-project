@@ -135,15 +135,53 @@
             android:gravity="center_horizontal"
             android:orientation="vertical">
 
+            <TextView
+                android:id="@+id/textView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Activities"
+                android:textAlignment="center" />
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/activityTypesRecyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingLeft="8dp"
                 android:paddingRight="8dp"
-                android:paddingBottom="16dp"
                 tools:itemCount="14"
                 tools:listitem="@layout/activity_classification_confidence_row" />
+
+            <!-- horizontal separator: https://stackoverflow.com/a/19115414/9184658 -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:background="#c0c0c0"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp" />
+
+            <TextView
+                android:id="@+id/textView4"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Categories"
+                android:textAlignment="center" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/activityCategoriesRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                android:paddingBottom="16dp"
+                tools:itemCount="3"
+                tools:listitem="@layout/activity_classification_confidence_row" />
+
+            <View
+                android:id="@+id/snackbarPaddingView"
+                android:layout_width="match_parent"
+                android:layout_height="48dp" />
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 

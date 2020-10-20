@@ -21,6 +21,15 @@ import java.util.concurrent.Executors
 
 typealias ClassificationResult = Pair<String, Float>
 
+val defaultClassificationResult = Pair("Activity", 0f)
+
+class ClassificationResults(val list: List<ClassificationResult>) {
+    // unsafe if list is empty
+    val maxI: Int = list.indices.maxByOrNull { i -> list.map { (_, c) -> c }[i] } ?: 0
+    val max: ClassificationResult =
+        list.getOrElse(maxI, defaultValue = { defaultClassificationResult })
+}
+
 class ActivityClassifier(private val context: Context) {
     private var interpreter: Interpreter? = null
     var isInitialized = false
@@ -68,7 +77,10 @@ class ActivityClassifier(private val context: Context) {
         // Finish interpreter initialization
         this.interpreter = interpreter
         isInitialized = true
-        Log.i(TAG, "Initialized TFLite interpreter with model '$modelFile'; input shape = ${inputShape.map { i -> i.toString() }}")
+        Log.i(
+            TAG,
+            "Initialized TFLite interpreter with model '$modelFile'; input shape = ${inputShape.map { i -> i.toString() }}"
+        )
     }
 
     @Throws(IOException::class)
@@ -79,11 +91,6 @@ class ActivityClassifier(private val context: Context) {
         val startOffset = fileDescriptor.startOffset
         val declaredLength = fileDescriptor.declaredLength
         return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
-    }
-
-    class ClassificationResults(val list: List<ClassificationResult>) {
-        val maxI: Int = list.indices.maxBy { i -> list.map { (_, c) -> c }[i] }?: -1
-        val max: ClassificationResult = list[maxI]
     }
 
     private fun classify(data: List<RespeckData>): ClassificationResults {
@@ -152,6 +159,7 @@ class ActivityClassifier(private val context: Context) {
 
         // floats are 4 bytes!
         private const val FLOAT_TYPE_SIZE = 4
+
         // TODO: update depending on time window duration?
         private const val XYZ_TYPE_SIZE = 3
 

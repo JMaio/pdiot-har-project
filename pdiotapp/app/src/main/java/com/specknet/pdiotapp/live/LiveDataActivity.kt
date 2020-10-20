@@ -64,12 +64,16 @@ class LiveDataActivity : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var recyclerViewAdapter: RecyclerView.Adapter<*>
     private lateinit var recyclerViewManager: RecyclerView.LayoutManager
+    // for movement categories
+    private lateinit var recyclerViewCategory: RecyclerView
+    private lateinit var recyclerViewCategoryAdapter: RecyclerView.Adapter<*>
+    private lateinit var recyclerViewCategoryManager: RecyclerView.LayoutManager
 
     // EvictingQueue from Guava, alternative could be Apache CircularFifoQueue
     // initialize zero-size queue to prevent errors
     private var respeckDataQueue: EvictingQueue<RespeckData> = EvictingQueue.create(0)
 
-    private var dummyClassificationResults = ActivityClassifier.ClassificationResults(
+    private var dummyClassificationResults = ClassificationResults(
         (0 until ActivityClassifier.OUTPUT_CLASSES_COUNT).mapIndexed { _, i ->
             ClassificationResult(
                 Constants.ACTIVITY_CODE_TO_NAME_MAPPING
@@ -140,12 +144,9 @@ class LiveDataActivity : AppCompatActivity() {
             }
         }
 
-
-
-
         setupChart()
 
-        setupRecyclerView()
+        setupRecyclerViews()
 
         // set up the broadcast receiver
         respeckLiveUpdateReceiver = object : BroadcastReceiver() {
@@ -285,14 +286,13 @@ class LiveDataActivity : AppCompatActivity() {
 
     }
 
-    fun setupRecyclerView() {
+    fun setupRecyclerViews() {
         // https://stackoverflow.com/a/17516998/9184658
         // create a layout manager that does not scroll
         recyclerViewManager = object : LinearLayoutManager(this) {
             override fun canScrollVertically(): Boolean = false
         }
         recyclerViewAdapter = ActivityRecyclerAdapter(dummyClassificationResults)
-
         recyclerView = findViewById<RecyclerView>(R.id.activityTypesRecyclerView).apply {
             // use this setting to improve performance if you know that changes
             // in content do not change the layout size of the RecyclerView
@@ -302,9 +302,22 @@ class LiveDataActivity : AppCompatActivity() {
             // specify an viewAdapter (see also next example)
             adapter = recyclerViewAdapter
         }
+
+        // category view, almost equivalent to other recycler view
+        recyclerViewCategoryManager = object : LinearLayoutManager(this) {
+            override fun canScrollVertically(): Boolean = false
+        }
+        recyclerViewAdapter = ActivityRecyclerAdapter(ClassificationResults(emptyList()))
+        recyclerViewCategory = findViewById<RecyclerView>(R.id.activityCategoriesRecyclerView).apply {
+            setHasFixedSize(true)
+            layoutManager = recyclerViewCategoryManager
+            adapter = recyclerViewAdapter
+        }
+
+
     }
 
-    class ActivityRecyclerAdapter(private val activities: ActivityClassifier.ClassificationResults) :
+    class ActivityRecyclerAdapter(private val activities: ClassificationResults) :
         RecyclerView.Adapter<ActivityRecyclerAdapter.ActivityRecyclerViewHolder>() {
 
         // Provide a reference to the views for each data item
@@ -374,6 +387,20 @@ class LiveDataActivity : AppCompatActivity() {
                 .addOnSuccessListener { res ->
                     Log.d(TAG, "updated classification results")
                     recyclerView.adapter = ActivityRecyclerAdapter(res)
+
+                    // massage the results
+                    val categorizedResults = ClassificationResults(
+                        // for each category
+                        Constants.ACTIVITY_CATEGORIES.mapIndexed { i, cat ->
+                            // make a pair of category to the confidence
+                            cat to res.list.filterIndexed { j, _ ->
+                                // if the category mapping puts this activity in this group
+                                Constants.ACTIVITY_TO_CATEGORY_MAP[j] == i
+                            }.map { (_, confidence) -> confidence }.sum() // sum the individual % confidence
+                        }
+                    )
+                    recyclerViewCategory.adapter = ActivityRecyclerAdapter(categorizedResults)
+
                     res.max.let { (name, c) ->
                         modelPredictionActivityText.text = name
                         modelPredictionConfidence.text = String.format("%.2f%%", 100*c)
