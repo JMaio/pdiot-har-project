@@ -47,19 +47,6 @@
 
 
         <Button
-            android:id="@+id/live_button"
-            android:layout_width="550px"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:background="#03A9F4"
-            android:text="Watch live processing"
-            android:textColor="#FFFFFF"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/record_button" />
-
-
-        <Button
             android:id="@+id/ble_button"
             android:layout_width="550px"
             android:layout_height="wrap_content"
@@ -69,7 +56,7 @@
             android:textColor="#FFFFFF"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/live_button" />
+            app:layout_constraintTop_toBottomOf="@+id/record_button" />
 
         <Button
             android:id="@+id/test_button"

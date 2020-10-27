@@ -28,7 +28,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 class MainActivity : AppCompatActivity() {
 
     // buttons and textviews
-    lateinit var liveProcessingButton: Button
+//    lateinit var liveProcessingButton: Button
     lateinit var pairingButton: Button
     lateinit var recordButton: Button
     lateinit var testButton: Button
@@ -66,7 +66,7 @@ class MainActivity : AppCompatActivity() {
             startActivity(introIntent)
         }
 
-        liveProcessingButton = findViewById(R.id.live_button)
+//        liveProcessingButton = findViewById(R.id.live_button)
         pairingButton = findViewById(R.id.ble_button)
         recordButton = findViewById(R.id.record_button)
         testButton = findViewById(R.id.test_button)
@@ -100,10 +100,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun setupClickListeners() {
-        liveProcessingButton.setOnClickListener {
-            val intent = Intent(this, LiveDataFragment::class.java)
-            startActivity(intent)
-        }
+//        liveProcessingButton.setOnClickListener {
+//            val intent = Intent(this, LiveDataFragment::class.java)
+//            startActivity(intent)
+//        }
 
         pairingButton.setOnClickListener {
             val intent = Intent(this, ConnectingActivity::class.java)
@@ -115,10 +115,10 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        testButton.setOnClickListener {
-            val i = Intent(this, BottomNavActivity::class.java)
-            startActivity(i)
-        }
+//        testButton.setOnClickListener {
+//            val i = Intent(this, BottomNavActivity::class.java)
+//            startActivity(i)
+//        }
     }
 
     fun setupPermissions() {
