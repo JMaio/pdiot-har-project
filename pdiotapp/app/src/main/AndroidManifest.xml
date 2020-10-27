@@ -20,8 +20,9 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
-        <activity android:name=".live.LiveDataActivity">
+        android:theme="@style/PDIoTAppTheme">
+
+        <activity android:name=".BottomNavActivity">
             <intent-filter>
                 <action android:name="com.specknet.respeck.RESPECK_LIVE_BROADCAST" />
             </intent-filter>
@@ -37,8 +38,21 @@
             <intent-filter>
                 <action android:name="com.specknet.pdiotapp.RESPECK_BROADCAST" />
             </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.specknet.respeckmodeltesting.RESPECK_CONNECTED" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.specknet.respeckmodeltesting.RESPECK_DISCONNECTED" />
+            </intent-filter>
         </activity>
+
         <activity android:name=".barcode.BarcodeActivity" />
+
         <activity android:name=".bluetooth.ConnectingActivity">
             <intent-filter>
                 <action android:name="com.specknet.pdiotapp.RESPECK_CONNECTED" />
@@ -60,18 +74,9 @@
         <activity android:name=".onboarding.OnBoardingActivity" />
         <activity android:name=".RecordingActivity" />
         <activity android:name=".MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="com.specknet.respeckmodeltesting.RESPECK_CONNECTED" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="com.specknet.respeckmodeltesting.RESPECK_DISCONNECTED" />
-            </intent-filter>
         </activity>
+
     </application>
 
 </manifest>

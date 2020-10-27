@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#6200EE</color>
-    <color name="colorPrimaryDark">#3700B3</color>
-    <color name="colorAccent">#03DAC5</color>
+    <color name="colorPrimary">#29B6F6</color>
+    <color name="colorPrimaryDark">#039BE5</color>
+    <color name="colorAccent">#FFA726</color>
+<!--    <color name="colorSecondary">#5C6BC0</color>-->
 
     <!-- Chart colors -->
     <!--    <color name="red">#FF595E</color>-->
@@ -12,7 +13,7 @@
     <!--    <color name="purple">#6a4c93</color>-->
 
     <!-- Design colors -->
-    <color name="indicator_unselected">#4D000000</color>
+    <color name="indicator_unselected">#EF5350</color>
 
     <!--Indigo 500-->
     <color name="primary_500">#3F51B5</color>
@@ -24,7 +25,7 @@
     <color name="accent_700">#C2185B</color>
     <color name="black_trans80">#33000000</color>
 
-
+    <color name="white">#FFF</color>
     <color name="blue_grey">#455A64</color>
     <color name="red">#F44336</color>
     <color name="pink">#E91E63</color>

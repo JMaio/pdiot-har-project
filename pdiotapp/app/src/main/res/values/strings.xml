@@ -54,4 +54,6 @@
     <string name="n_data_points">%1$d data points</string>
     <string name="data_points">… data points</string>
     <string name="tfe_dc_classification_error_message">Error classifying activity: %s</string>
+    <string name="live">Live</string>
+    <string name="record">Record</string>
 </resources>

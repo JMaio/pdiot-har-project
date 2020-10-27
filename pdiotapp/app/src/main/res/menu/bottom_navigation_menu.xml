@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:icon="@drawable/ic_baseline_insights_24"
+        android:title="@string/live" />
+    <item
+
+        android:icon="@drawable/ic_baseline_timer_24"
+        android:title="@string/record" />
+    <item
+        android:icon="@drawable/ic_bluetooth_icon"
+        android:title="@string/section_bluetooth_title" />
+</menu>
