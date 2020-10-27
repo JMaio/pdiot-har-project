@@ -9,6 +9,6 @@
         android:icon="@drawable/ic_baseline_timer_24"
         android:title="@string/record" />
     <item
-        android:icon="@drawable/ic_bluetooth_icon"
+        android:icon="@drawable/ic_baseline_bluetooth_24"
         android:title="@string/section_bluetooth_title" />
 </menu>
