@@ -114,22 +114,6 @@ public class Constants {
         put(20, "Breathing");
     }};
 
-    public static final Map<Integer, Integer> TFCODE_TO_ACTIVITY_CODE = new HashMap<Integer, Integer>() {{
-        put(0,  0);    // "Sitting",
-        put(1,  4);    // "Sitting bent forward",
-        put(2,  5);    // "Sitting bent backward",
-        put(3,  1);    // "Walking at normal speed",
-        put(4,  100);  // "Standing",
-        put(5,  2);    // "Lying down on back",
-        put(6,  7);    // "Lying down left",
-        put(7,  6);    // "Lying down right",
-        put(8,  8);    // "Lying down on stomach",
-        put(9,  9);    // "Movement",
-        put(10, 11);   // "Running",
-        put(11, 12);   // "Climbing stairs",
-        put(12, 13);   // "Descending stairs",
-        put(13, 31);   // "Desk work"
-    }};
 
     public static final ArrayList<String> AVAILABLE_ACTIVITIES = new ArrayList<String>() {{
         add("Sitting");
@@ -148,28 +132,51 @@ public class Constants {
         add("Desk work");
     }};
 
+//    public static final Map<Integer, Integer> ACTIVITY_TO_CATEGORY_MAP = new HashMap<Integer, Integer>() {{
+//        put(0,  0);    // "Sitting",
+//        put(1,  0);    // "Sitting bent forward",
+//        put(2,  0);    // "Sitting bent backward",
+//        put(3,  1);    // "Walking at normal speed",
+//        put(4,  0);    // "Standing",
+//        put(5,  0);    // "Lying down on back",
+//        put(6,  0);    // "Lying down left",
+//        put(7,  0);    // "Lying down right",
+//        put(8,  0);    // "Lying down on stomach",
+//        put(9,  1);    // "Movement",
+//        put(10, 2);    // "Running",
+//        put(11, 1);   // "Climbing stairs",
+//        put(12, 1);   // "Descending stairs",
+//        put(13, 0);   // "Desk work"
+//    }};
+
+//    public static final Map<Integer, Integer> TFCODE_TO_ACTIVITY_CODE = new HashMap<Integer, Integer>() {{
+//        put(0,  0);    // "Sitting",
+//        put(1,  4);    // "Sitting bent forward",
+//        put(2,  5);    // "Sitting bent backward",
+//        put(3,  1);    // "Walking at normal speed",
+//        put(4,  100);  // "Standing",
+//        put(5,  2);    // "Lying down on back",
+//        put(6,  7);    // "Lying down left",
+//        put(7,  6);    // "Lying down right",
+//        put(8,  8);    // "Lying down on stomach",
+//        put(9,  9);    // "Movement",
+//        put(10, 11);   // "Running",
+//        put(11, 12);   // "Climbing stairs",
+//        put(12, 13);   // "Descending stairs",
+//        put(13, 31);   // "Desk work"
+//    }};
+
     public static final ArrayList<String> ACTIVITY_CATEGORIES = new ArrayList<String>() {{
-        add("Resting");       // 0
-        add("Slow movement"); // 1
-        add("Fast movement"); // 2
+        add("Sitting");
+        add("Walking");
+        add("Standing");
+        add("Lying");
+        add("Movement");
+        add("Running");
+        add("Climbing Stairs");
+        add("Descending stairs");
     }};
 
-    public static final Map<Integer, Integer> ACTIVITY_TO_CATEGORY_MAP = new HashMap<Integer, Integer>() {{
-        put(0,  0);    // "Sitting",
-        put(1,  0);    // "Sitting bent forward",
-        put(2,  0);    // "Sitting bent backward",
-        put(3,  1);    // "Walking at normal speed",
-        put(4,  0);    // "Standing",
-        put(5,  0);    // "Lying down on back",
-        put(6,  0);    // "Lying down left",
-        put(7,  0);    // "Lying down right",
-        put(8,  0);    // "Lying down on stomach",
-        put(9,  1);    // "Movement",
-        put(10, 2);    // "Running",
-        put(11, 1);   // "Climbing stairs",
-        put(12, 1);   // "Descending stairs",
-        put(13, 0);   // "Desk work"
-    }};
 
     public static final String PREF_USER_FIRST_TIME = "user_first_time";
 

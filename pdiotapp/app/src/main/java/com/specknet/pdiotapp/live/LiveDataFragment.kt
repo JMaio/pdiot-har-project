@@ -84,8 +84,9 @@ class LiveDataFragment : Fragment() {
     private var dummyClassificationResults = ClassificationResults(
         (0 until ActivityClassifier.OUTPUT_CLASSES_COUNT).mapIndexed { _, i ->
             ClassificationResult(
-                Constants.ACTIVITY_CODE_TO_NAME_MAPPING
-                    .getOrDefault(Constants.TFCODE_TO_ACTIVITY_CODE[i], "Unknown"),
+                Constants.ACTIVITY_CATEGORIES[i],
+//                Constants.ACTIVITY_CODE_TO_NAME_MAPPING
+//                    .getOrDefault(Constants.TFCODE_TO_ACTIVITY_CODE[i], "Unknown"),
                 0f
             )
         }
@@ -105,7 +106,7 @@ class LiveDataFragment : Fragment() {
 
         assetManager = ctx.assets
         // grab files with tflite extensions
-        models = assetManager.list("")?.filter { f -> f.endsWith(".tflite") }.orEmpty()
+        models = assetManager.list(ActivityClassifier.MODEL_DIR)?.filter { f -> f.endsWith(".tflite") }.orEmpty()
         Log.i(TAG, "models found: $models")
 
         modelChoiceAdapter = ArrayAdapter<String>(
@@ -424,22 +425,22 @@ class LiveDataFragment : Fragment() {
                     recyclerView.adapter = ActivityRecyclerAdapter(res)
 
                     // massage the results
-                    val categorizedResults = ClassificationResults(
-                        // for each category
-                        Constants.ACTIVITY_CATEGORIES.mapIndexed { i, cat ->
-                            // make a pair of category to the confidence
-                            cat to res.list.filterIndexed { j, _ ->
-                                // if the category mapping puts this activity in this group
-                                Constants.ACTIVITY_TO_CATEGORY_MAP[j] == i
-                            }.map { (_, confidence) -> confidence }
-                                .sum() // sum the individual % confidence
-                        }
-                    )
-                    recyclerViewCategory.adapter = ActivityRecyclerAdapter(categorizedResults)
+//                    val categorizedResults = ClassificationResults(
+//                        // for each category
+//                        Constants.ACTIVITY_CATEGORIES.mapIndexed { i, cat ->
+//                            // make a pair of category to the confidence
+//                            cat to res.list.filterIndexed { j, _ ->
+//                                // if the category mapping puts this activity in this group
+//                                Constants.ACTIVITY_TO_CATEGORY_MAP[j] == i
+//                            }.map { (_, confidence) -> confidence }
+//                                .sum() // sum the individual % confidence
+//                        }
+//                    )
+//                    recyclerViewCategory.adapter = ActivityRecyclerAdapter(categorizedResults)
 
                     res.max.let { (name, c) ->
                         modelPredictionActivityText.text = name
-                        modelPredictionConfidence?.text = String.format("%.2f%%", 100 * c)
+                        modelPredictionConfidence.text = String.format("%.2f%%", 100 * c)
                     }
                 }
                 .addOnFailureListener { e ->

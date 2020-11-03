@@ -85,7 +85,7 @@ class ActivityClassifier(private val context: Context) {
 
     @Throws(IOException::class)
     private fun loadModelFile(assetManager: AssetManager, modelFile: String): ByteBuffer {
-        val fileDescriptor = assetManager.openFd(modelFile)
+        val fileDescriptor = assetManager.openFd(MODEL_DIR + modelFile)
         val inputStream = FileInputStream(fileDescriptor.fileDescriptor)
         val fileChannel = inputStream.channel
         val startOffset = fileDescriptor.startOffset
@@ -110,10 +110,11 @@ class ActivityClassifier(private val context: Context) {
         Log.d(TAG, "Inference time = " + elapsedTime + "ms")
 
         return ClassificationResults(result[0].mapIndexed { i, f ->
-            Log.d(TAG, "inference: ${Constants.TFCODE_TO_ACTIVITY_CODE[i]} => $f")
+            Log.d(TAG, "inference: ${Constants.ACTIVITY_CATEGORIES[i]} => $f")
             ClassificationResult(
-                Constants.ACTIVITY_CODE_TO_NAME_MAPPING
-                    .getOrDefault(Constants.TFCODE_TO_ACTIVITY_CODE[i], "Unknown"),
+                Constants.ACTIVITY_CATEGORIES[i],
+//                Constants.ACTIVITY_CODE_TO_NAME_MAPPING
+//                    .getOrDefault(Constants.TFCODE_TO_ACTIVITY_CODE[i], "Unknown"),
                 f
             )
         })
@@ -151,7 +152,6 @@ class ActivityClassifier(private val context: Context) {
     companion object {
         private const val TAG = "ActivityClassifier"
 
-        private const val MODEL_FILE = "cnn_model_no_standardisation.tflite"
 
 
 //        private const val FLOAT_TYPE_SIZE = 4
@@ -163,6 +163,10 @@ class ActivityClassifier(private val context: Context) {
         // TODO: update depending on time window duration?
         private const val XYZ_TYPE_SIZE = 3
 
-        const val OUTPUT_CLASSES_COUNT = 14
+        const val OUTPUT_ACTIVITIES_COUNT = 14
+        const val OUTPUT_CLASSES_COUNT = 8
+
+        const val MODEL_DIR = "models/"
+//        private const val MODEL_FILE = MODEL_DIR + "cnn_model_grouped_step50_1_Chest_Right.tflite"
     }
 }
