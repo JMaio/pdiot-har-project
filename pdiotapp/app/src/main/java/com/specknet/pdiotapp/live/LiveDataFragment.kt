@@ -36,6 +36,9 @@ import kotlin.math.sqrt
 
 
 class LiveDataFragment : Fragment() {
+    override fun setRetainInstance(retain: Boolean) {
+        super.setRetainInstance(true)
+    }
     // assets
     lateinit var assetManager: AssetManager
     lateinit var ctx: Context
@@ -60,6 +63,9 @@ class LiveDataFragment : Fragment() {
     val filterTest = IntentFilter(Constants.ACTION_INNER_RESPECK_BROADCAST)
 
     private lateinit var modelSelector: Spinner
+    private lateinit var modelPredictionActivityText: TextView
+    private lateinit var modelPredictionConfidence: TextView
+    private lateinit var modelChoiceAdapter: ArrayAdapter<String>
     private lateinit var models: List<String>
 
     private lateinit var recyclerView: RecyclerView
@@ -94,33 +100,39 @@ class LiveDataFragment : Fragment() {
         ctx = context
     }
 
-    // https://www.raywenderlich.com/1364094-android-fragments-tutorial-an-introduction-with-kotlin
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        val view: View = inflater.inflate(R.layout.activity_live_data, container, false)
-        // get the accel fields
-        val accelX = view.findViewById<TextView>(R.id.accel_x)
-        val accelY = view.findViewById<TextView>(R.id.accel_y)
-        val accelZ = view.findViewById<TextView>(R.id.accel_z)
-        val magTextView = view.findViewById<TextView>(R.id.magTextView)
 
         assetManager = ctx.assets
         // grab files with tflite extensions
         models = assetManager.list("")?.filter { f -> f.endsWith(".tflite") }.orEmpty()
         Log.i(TAG, "models found: $models")
 
-        activityClassifier = ActivityClassifier(ctx)
-
-        val modelChoiceAdapter = ArrayAdapter<String>(
+        modelChoiceAdapter = ArrayAdapter<String>(
             ctx,
             android.R.layout.simple_spinner_dropdown_item,
             models
         )
+
+        activityClassifier = ActivityClassifier(ctx)
+    }
+
+    // https://www.raywenderlich.com/1364094-android-fragments-tutorial-an-introduction-with-kotlin
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        super.onCreateView(inflater, container, savedInstanceState)
+
+        val view: View = inflater.inflate(R.layout.activity_live_data, container, false)
+
+        // get the accel fields
+        val accelX = view.findViewById<TextView>(R.id.accel_x)
+        val accelY = view.findViewById<TextView>(R.id.accel_y)
+        val accelZ = view.findViewById<TextView>(R.id.accel_z)
+        val magTextView = view.findViewById<TextView>(R.id.magTextView)
+
         modelSelector = view.findViewById(R.id.modelSelectionSpinner)
         modelSelector.apply {
             adapter = modelChoiceAdapter
@@ -155,6 +167,9 @@ class LiveDataFragment : Fragment() {
                 override fun onNothingSelected(parent: AdapterView<*>?) {}
             }
         }
+
+        modelPredictionActivityText = view.findViewById(R.id.modelPredictionActivityText)
+        modelPredictionConfidence = view.findViewById(R.id.modelPredictionConfidence)
 
 //        Log.i(TAG, "assets: ${assets.list("")?.map { s -> s }}")
 
@@ -199,14 +214,10 @@ class LiveDataFragment : Fragment() {
                         classifyActivity(respeckDataQueue.toList())
 
                         runOnUiThread {
-                            accelX.text =
-                                "${getString(R.string.accel_x)} = ${String.format("%.4f", x)}"
-                            accelY.text =
-                                "${getString(R.string.accel_y)} = ${String.format("%.4f", y)}"
-                            accelZ.text =
-                                "${getString(R.string.accel_z)} = ${String.format("%.4f", z)}"
-                            magTextView.text =
-                                "${getString(R.string.mag)} = ${String.format("%.4f", mag)}"
+                            accelX.text = getString(R.string.s_eq_4f, getString(R.string.accel_x), x)
+                            accelY.text = getString(R.string.s_eq_4f, getString(R.string.accel_y), y)
+                            accelZ.text = getString(R.string.s_eq_4f, getString(R.string.accel_z), z)
+                            magTextView.text = getString(R.string.s_eq_4f, getString(R.string.accel_mag), mag)
                         }
                     }
 
@@ -428,7 +439,7 @@ class LiveDataFragment : Fragment() {
 
                     res.max.let { (name, c) ->
                         modelPredictionActivityText.text = name
-                        modelPredictionConfidence.text = String.format("%.2f%%", 100 * c)
+                        modelPredictionConfidence?.text = String.format("%.2f%%", 100 * c)
                     }
                 }
                 .addOnFailureListener { e ->

@@ -43,7 +43,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:fontFamily="monospace"
-                android:text="%"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/modelPredictionActivityText"
@@ -113,7 +112,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="32dp"
             android:layout_marginTop="4dp"
-            android:text="@string/mag" />
+            android:text="@string/accel_mag" />
     </LinearLayout>
 
     <androidx.core.widget.NestedScrollView
@@ -139,7 +138,7 @@
                 android:id="@+id/textView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Activities"
+                android:text="@string/activities"
                 android:textAlignment="center" />
 
             <androidx.recyclerview.widget.RecyclerView
@@ -165,7 +164,7 @@
                 android:id="@+id/textView4"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Categories"
+                android:text="@string/categories"
                 android:textAlignment="center" />
 
             <androidx.recyclerview.widget.RecyclerView
