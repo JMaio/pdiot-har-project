@@ -1,10 +1,58 @@
 <resources>
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="PDIoTAppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorSecondary">@color/white</item>
+        <item name="colorOnSecondary">@color/colorPrimary</item>
+
+        <!-- https://stackoverflow.com/a/62864686/9184658 -->
+        <item name="snackbarStyle">@style/SnackbarWithMargin</item>
     </style>
+
+    <style name="SnackbarWithMargin" parent="Widget.MaterialComponents.Snackbar">
+        <item name="android:layout_margin">32dp</item>
+<!--        <item name="android:layout_marginEnd">64dp</item>-->
+    </style>
+    <!--  https://stackoverflow.com/a/53927172/9184658  -->
+<!--    <style name="Widget.App.BottomNavigationView" parent="Widget.MaterialComponents.BottomNavigationView">-->
+        <!-- App bar colour -->
+<!--        <item name="itemTextColor">@color/white</item>-->
+<!--        <item name="colorControlActivated">@color/colorPrimary</item>-->
+<!--        <item name="colorControlHighlight">@color/colorPrimary</item>-->
+
+<!--        <item name="colorPrimary">@color/colorPrimary</item>-->
+<!--        <item name="colorPrimaryDark">@color/colorPrimary</item>-->
+<!--        <item name="colorPrimaryVariant">@color/colorPrimary</item>-->
+<!--        <item name="colorOnPrimary">@color/white</item>-->
+<!--        <item name="colorSecondary">@color/colorPrimary</item>-->
+<!--        <item name="colorSecondaryVariant">@color/colorPrimary</item>-->
+<!--        <item name="colorOnSecondary">@color/colorPrimary</item>-->
+<!--        <item name="colorAccent">@color/colorPrimary</item>-->
+<!--        <item name="colorSurface">@color/white</item>-->
+<!--        <item name="colorOnSurface">@color/colorPrimary</item>-->
+<!--        <item name="colorError">@color/colorPrimary</item>-->
+<!--        <item name="colorOnError">@color/colorPrimary</item>-->
+<!--        <item name="colorButtonNormal">@color/colorPrimary</item>-->
+<!--        <item name="colorControlNormal">@color/colorPrimary</item>-->
+<!--        <item name="colorControlActivated">@color/colorPrimary</item>-->
+<!--        <item name="colorControlHighlight">@color/colorPrimary</item>-->
+<!--        <item name="colorBackgroundFloating">@color/colorPrimary</item>-->
+<!--    </style>-->
+
+<!--    <style name="Widget.App.FloatingActionButton" parent="Widget.MaterialComponents.FloatingActionButton">-->
+        <!-- Fab colour -->
+<!--        <item name="colorSurface">@color/colorPrimary</item>-->
+<!--        <item name="colorPrimary">@color/colorPrimary</item>-->
+<!--        <item name="">@color/colorPrimary</item>-->
+
+<!--        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>-->
+<!--        <item name="colorAccent">@color/colorAccent</item>-->
+<!--        <item name="colorSecondary">@color/white</item>-->
+<!--        <item name="colorOnSecondary">@color/colorPrimary</item>-->
+<!--        <item name="colorOnSurface">@color/pink</item>-->
+<!--    </style>-->
 
 </resources>

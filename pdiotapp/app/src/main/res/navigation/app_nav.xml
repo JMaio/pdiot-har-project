@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/app_nav"
+    app:startDestination="@id/navigation_live">
+    <fragment
+        android:id="@+id/navigation_live"
+        android:name="com.specknet.pdiotapp.live.LiveDataFragment"
+        android:label="live"
+        tools:layout="@layout/activity_live_data" />
+    <fragment
+        android:id="@+id/navigation_connect"
+        android:name="com.specknet.pdiotapp.bluetooth.ConnectingFragment"
+        android:label="connect"
+        tools:layout="@layout/activity_connecting" />
+</navigation>

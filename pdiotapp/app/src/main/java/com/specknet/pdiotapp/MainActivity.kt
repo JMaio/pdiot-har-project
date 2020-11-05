@@ -19,7 +19,7 @@ import androidx.core.app.ActivityCompat
 import com.google.android.material.snackbar.Snackbar
 import com.specknet.pdiotapp.bluetooth.BluetoothService
 import com.specknet.pdiotapp.bluetooth.ConnectingActivity
-import com.specknet.pdiotapp.live.LiveDataActivity
+import com.specknet.pdiotapp.live.LiveDataFragment
 import com.specknet.pdiotapp.onboarding.OnBoardingActivity
 import com.specknet.pdiotapp.utils.Constants
 import com.specknet.pdiotapp.utils.Utils
@@ -28,9 +28,10 @@ import kotlinx.android.synthetic.main.activity_main.*
 class MainActivity : AppCompatActivity() {
 
     // buttons and textviews
-    lateinit var liveProcessingButton: Button
+//    lateinit var liveProcessingButton: Button
     lateinit var pairingButton: Button
     lateinit var recordButton: Button
+    lateinit var testButton: Button
     lateinit var respeckStatus: TextView
 
     // permissions
@@ -65,9 +66,10 @@ class MainActivity : AppCompatActivity() {
             startActivity(introIntent)
         }
 
-        liveProcessingButton = findViewById(R.id.live_button)
+//        liveProcessingButton = findViewById(R.id.live_button)
         pairingButton = findViewById(R.id.ble_button)
         recordButton = findViewById(R.id.record_button)
+        testButton = findViewById(R.id.test_button)
         respeckStatus = findViewById(R.id.respeck_status_welcome)
 
         permissionAlertDialog = AlertDialog.Builder(this)
@@ -98,10 +100,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun setupClickListeners() {
-        liveProcessingButton.setOnClickListener {
-            val intent = Intent(this, LiveDataActivity::class.java)
-            startActivity(intent)
-        }
+//        liveProcessingButton.setOnClickListener {
+//            val intent = Intent(this, LiveDataFragment::class.java)
+//            startActivity(intent)
+//        }
 
         pairingButton.setOnClickListener {
             val intent = Intent(this, ConnectingActivity::class.java)
@@ -112,6 +114,11 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this, RecordingActivity::class.java)
             startActivity(intent)
         }
+
+//        testButton.setOnClickListener {
+//            val i = Intent(this, BottomNavActivity::class.java)
+//            startActivity(i)
+//        }
     }
 
     fun setupPermissions() {

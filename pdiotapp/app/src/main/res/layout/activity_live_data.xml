@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".live.LiveDataActivity">
+    tools:context=".live.LiveDataFragment">
 
     <androidx.cardview.widget.CardView
         android:id="@+id/cardView"
@@ -43,7 +43,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:fontFamily="monospace"
-                android:text="%"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/modelPredictionActivityText"
@@ -54,9 +53,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
+                app:layout_constrainedWidth="true"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/modelPredictionConfidence" />
+                app:layout_constraintTop_toBottomOf="@+id/modelPredictionConfidence"
+                app:layout_constraintWidth_max="300dp" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>
@@ -113,7 +114,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="32dp"
             android:layout_marginTop="4dp"
-            android:text="@string/mag" />
+            android:text="@string/accel_mag" />
     </LinearLayout>
 
     <androidx.core.widget.NestedScrollView
@@ -135,15 +136,57 @@
             android:gravity="center_horizontal"
             android:orientation="vertical">
 
+            <TextView
+                android:id="@+id/textView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/categories"
+                android:textAlignment="center" />
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/activityTypesRecyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingLeft="8dp"
                 android:paddingRight="8dp"
-                android:paddingBottom="16dp"
                 tools:itemCount="14"
                 tools:listitem="@layout/activity_classification_confidence_row" />
+
+            <!-- horizontal separator: https://stackoverflow.com/a/19115414/9184658 -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:background="#c0c0c0"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/textView4"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/categories"
+                android:textAlignment="center"
+                android:visibility="gone" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/activityCategoriesRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                android:paddingBottom="16dp"
+                android:visibility="gone"
+                tools:itemCount="3"
+                tools:listitem="@layout/activity_classification_confidence_row" />
+
+            <View
+                android:id="@+id/snackbarPaddingView"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                tools:visibility="gone" />
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 

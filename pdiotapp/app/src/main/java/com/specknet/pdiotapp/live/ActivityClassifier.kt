@@ -21,6 +21,15 @@ import java.util.concurrent.Executors
 
 typealias ClassificationResult = Pair<String, Float>
 
+val defaultClassificationResult = Pair("Activity", 0f)
+
+class ClassificationResults(val list: List<ClassificationResult>) {
+    // unsafe if list is empty
+    val maxI: Int = list.indices.maxByOrNull { i -> list.map { (_, c) -> c }[i] } ?: 0
+    val max: ClassificationResult =
+        list.getOrElse(maxI, defaultValue = { defaultClassificationResult })
+}
+
 class ActivityClassifier(private val context: Context) {
     private var interpreter: Interpreter? = null
     var isInitialized = false
@@ -68,22 +77,20 @@ class ActivityClassifier(private val context: Context) {
         // Finish interpreter initialization
         this.interpreter = interpreter
         isInitialized = true
-        Log.i(TAG, "Initialized TFLite interpreter with model '$modelFile'; input shape = ${inputShape.map { i -> i.toString() }}")
+        Log.i(
+            TAG,
+            "Initialized TFLite interpreter with model '$modelFile'; input shape = ${inputShape.map { i -> i.toString() }}"
+        )
     }
 
     @Throws(IOException::class)
     private fun loadModelFile(assetManager: AssetManager, modelFile: String): ByteBuffer {
-        val fileDescriptor = assetManager.openFd(modelFile)
+        val fileDescriptor = assetManager.openFd(MODEL_DIR + modelFile)
         val inputStream = FileInputStream(fileDescriptor.fileDescriptor)
         val fileChannel = inputStream.channel
         val startOffset = fileDescriptor.startOffset
         val declaredLength = fileDescriptor.declaredLength
         return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
-    }
-
-    class ClassificationResults(val list: List<ClassificationResult>) {
-        val maxI: Int = list.indices.maxBy { i -> list.map { (_, c) -> c }[i] }?: -1
-        val max: ClassificationResult = list[maxI]
     }
 
     private fun classify(data: List<RespeckData>): ClassificationResults {
@@ -103,10 +110,11 @@ class ActivityClassifier(private val context: Context) {
         Log.d(TAG, "Inference time = " + elapsedTime + "ms")
 
         return ClassificationResults(result[0].mapIndexed { i, f ->
-            Log.d(TAG, "inference: ${Constants.TFCODE_TO_ACTIVITY_CODE[i]} => $f")
+            Log.d(TAG, "inference: ${Constants.ACTIVITY_CATEGORIES[i]} => $f")
             ClassificationResult(
-                Constants.ACTIVITY_CODE_TO_NAME_MAPPING
-                    .getOrDefault(Constants.TFCODE_TO_ACTIVITY_CODE[i], "Unknown"),
+                Constants.ACTIVITY_CATEGORIES[i],
+//                Constants.ACTIVITY_CODE_TO_NAME_MAPPING
+//                    .getOrDefault(Constants.TFCODE_TO_ACTIVITY_CODE[i], "Unknown"),
                 f
             )
         })
@@ -144,7 +152,6 @@ class ActivityClassifier(private val context: Context) {
     companion object {
         private const val TAG = "ActivityClassifier"
 
-        private const val MODEL_FILE = "cnn_model_no_standardisation.tflite"
 
 
 //        private const val FLOAT_TYPE_SIZE = 4
@@ -152,9 +159,14 @@ class ActivityClassifier(private val context: Context) {
 
         // floats are 4 bytes!
         private const val FLOAT_TYPE_SIZE = 4
+
         // TODO: update depending on time window duration?
         private const val XYZ_TYPE_SIZE = 3
 
-        const val OUTPUT_CLASSES_COUNT = 14
+        const val OUTPUT_ACTIVITIES_COUNT = 14
+        const val OUTPUT_CLASSES_COUNT = 8
+
+        const val MODEL_DIR = "models/"
+//        private const val MODEL_FILE = MODEL_DIR + "cnn_model_grouped_step50_1_Chest_Right.tflite"
     }
 }
