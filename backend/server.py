@@ -11,6 +11,8 @@ from collections import deque
 
 
 API_PREFIX = '/api/v1'
+# https://flask-restplus.readthedocs.io/en/stable/api.html?highlight=swagger.json#flask_restplus.Api.specs_url
+OPENAPI_FILE = 'openapi.json'
 # # https://pypi.org/project/flask-restful-swagger-3/
 # SWAGGER_URL = ''  # URL for exposing Swagger UI (without trailing '/')
 # API_URL = ''  # Our API url (can of course be a local resource)
@@ -20,8 +22,7 @@ app = Flask(__name__)
 api = Api(
     app,
     prefix=API_PREFIX,
-    # swagger_prefix_url=SWAGGER_URL,
-    # swagger_url=API_URL
+    # specs_url=OPENAPI_FILE
 )
 
 data = {
@@ -69,4 +70,8 @@ class FullData(Resource):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(
+        host="0.0.0.0",
+        port=5000,
+        debug=True,
+    )
