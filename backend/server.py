@@ -30,7 +30,11 @@ data = {
 }
 
 parser = reqparse.RequestParser()
-parser.add_argument('data', type=list, location='json', required=True)
+parser.add_argument('respeck_data', type=list, location='json', required=True)
+
+respeckData = api.model('RespeckData', {
+    'respeck_data': fields.List(fields.List(fields.Float(required=True)))
+})
 
 
 @api.route('/respeck/<string:respeck_mac>')
@@ -46,10 +50,10 @@ class RespeckData(Resource):
         except KeyError:
             return {}, 404
 
-    @api.expect({'data': fields.List(fields.List(fields.Float(required=True)))})
+    @api.expect(respeckData)
     def post(self, respeck_mac):
         args = parser.parse_args()
-        d = args['data']
+        d = args['respeck_data']
         print(args)
         # print(d)
         try:
