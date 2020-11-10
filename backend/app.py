@@ -22,21 +22,34 @@ app = Flask(__name__)
 api = Api(
     app,
     prefix=API_PREFIX,
-    # specs_url=OPENAPI_FILE
 )
+app.config.SWAGGER_SUPPORTED_SUBMIT_METHODS = ["get", "post"]
+
 
 data = {
     "ABC": deque([[0]*WINDOW_SIZE], maxlen=WINDOW_SIZE)
 }
 
 parser = reqparse.RequestParser()
-parser.add_argument('respeck_data', type=list, location='json', required=True)
+parser.add_argument('respeck_data', type=list, location='json')
+parser.add_argument('Content-Type', location='headers')
 
 respeckData = api.model('RespeckData', {
+    # 'mac': fields.String,
     'respeck_data': fields.List(fields.List(fields.Float(required=True)))
 })
 
+# respeckData = api.model('RespeckData', {
+#     'respeck_data': {
+#         'timestamp': fields.Integer,
+#         'x': fields.Float,
+#         'y': fields.Float,
+#         'z': fields.Float,
+#     }
+# })
 
+
+# @api.route('/respeck', defaults={'respeck_mac': ""})
 @api.route('/respeck/<string:respeck_mac>')
 class RespeckData(Resource):
     @api.doc(responses={
@@ -51,11 +64,20 @@ class RespeckData(Resource):
             return {}, 404
 
     @api.expect(respeckData)
+    @api.expect(parser)
     def post(self, respeck_mac):
+        print(type(request.data))
+        # print(request.json)
+        print(request.headers)
+        # print(respeck_mac)
+        # print(parser)
         args = parser.parse_args()
+        # print(args)
+        # mac = args['respeck_mac']
         d = args['respeck_data']
-        print(args)
-        # print(d)
+        # d = [[1,2,3]]
+        # respeck_mac = 1
+        print(len(d))
         try:
             data[respeck_mac].extend(d)
         except KeyError:
@@ -63,7 +85,7 @@ class RespeckData(Resource):
 
         return {
             'mac': respeck_mac,
-            'data': list(data[respeck_mac])
+            'respeck_data': list(data[respeck_mac])
         }
 
 
@@ -71,6 +93,7 @@ class RespeckData(Resource):
 class FullData(Resource):
     def get(self):
         return {k: list(v) for (k, v) in data.items()}
+
 
 
 if __name__ == '__main__':
