@@ -235,7 +235,7 @@ class LiveDataFragment : Fragment() {
                             flaskApi.postRespeckData(respeckUUID.replace(':', '-'),
                                 org.openapitools.client.model.RespeckData().apply {
                                     respeckData = respeckDataQueue.take(interval).map { d ->
-                                        listOf(d.accel_x, d.accel_y, d.accel_y).map { it.toBigDecimal() }
+                                        listOf(d.accel_x, d.accel_y, d.accel_z).map { it.toBigDecimal() }
                                     }.toList()
                                 }
                             )
