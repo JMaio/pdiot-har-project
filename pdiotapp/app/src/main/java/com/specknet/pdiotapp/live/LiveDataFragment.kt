@@ -29,6 +29,9 @@ import com.google.common.collect.EvictingQueue
 import com.specknet.pdiotapp.R
 import com.specknet.pdiotapp.utils.*
 import kotlinx.android.synthetic.main.activity_live_data.*
+import org.openapitools.client.ApiException
+import org.openapitools.client.api.DefaultApi
+import java.math.BigDecimal
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.DelayQueue
 import kotlin.math.roundToInt
@@ -36,6 +39,10 @@ import kotlin.math.sqrt
 
 
 class LiveDataFragment : Fragment() {
+    companion object {
+        const val API_BASE_PATH = "http://192.168.1.105:5000/api/v1"
+        private const val TAG = "LiveDataActivity"
+    }
     override fun setRetainInstance(retain: Boolean) {
         super.setRetainInstance(true)
     }
@@ -76,6 +83,9 @@ class LiveDataFragment : Fragment() {
     private lateinit var recyclerViewCategory: RecyclerView
     private lateinit var recyclerViewCategoryAdapter: RecyclerView.Adapter<*>
     private lateinit var recyclerViewCategoryManager: RecyclerView.LayoutManager
+
+    private lateinit var flaskApi: DefaultApi
+    private lateinit var respeckUUID: String
 
     // EvictingQueue from Guava, alternative could be Apache CircularFifoQueue
     // initialize zero-size queue to prevent errors
@@ -172,6 +182,8 @@ class LiveDataFragment : Fragment() {
         modelPredictionActivityText = view.findViewById(R.id.modelPredictionActivityText)
         modelPredictionConfidence = view.findViewById(R.id.modelPredictionConfidence)
 
+        connectToApi()
+
 //        Log.i(TAG, "assets: ${assets.list("")?.map { s -> s }}")
 
         // https://stackoverflow.com/q/60430697/9184658
@@ -179,6 +191,9 @@ class LiveDataFragment : Fragment() {
         setupChart(view)
 //
         setupRecyclerViews(view)
+
+        val sharedPreferences = ctx.getSharedPreferences(Constants.PREFERENCES_FILE, Context.MODE_PRIVATE)
+        respeckUUID = sharedPreferences.getString(Constants.RESPECK_MAC_ADDRESS_PREF, "").toString()
 
         // set up the broadcast receiver
         respeckLiveUpdateReceiver = object : BroadcastReceiver() {
@@ -210,9 +225,27 @@ class LiveDataFragment : Fragment() {
                     respeckDataQueue.add(data)
                     Log.d(TAG, "respeckDataQueue head = ${respeckDataQueue.peek()}")
 
-                    if (time % 5 == 0) {
+                    val interval = 50;
+
+                    if (time % interval == 0) {
                         // only update every 5 data points
                         classifyActivity(respeckDataQueue.toList())
+
+                        try {
+                            flaskApi.postRespeckData(respeckUUID.replace(':', '-'),
+                                org.openapitools.client.model.RespeckData().apply {
+                                    respeckData = respeckDataQueue.take(interval).map { d ->
+                                        listOf(d.accel_x, d.accel_y, d.accel_y).map { it.toBigDecimal() }
+                                    }.toList()
+                                }
+                            )
+                        } catch (e: ApiException) {
+                            print(e)
+//                            Snackbar.make()
+                        } catch (e: Exception) {
+                            // probably disconnected
+                            connectToApi()
+                        }
 
                         runOnUiThread {
                             accelX.text = getString(R.string.s_eq_4f, getString(R.string.accel_x), x)
@@ -453,7 +486,9 @@ class LiveDataFragment : Fragment() {
         }
     }
 
-    companion object {
-        private const val TAG = "LiveDataActivity"
+    private fun connectToApi() {
+        flaskApi = DefaultApi().apply {
+            basePath = API_BASE_PATH
+        }
     }
 }
