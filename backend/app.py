@@ -30,9 +30,9 @@ data = {
     "ABC": deque([[0]*WINDOW_SIZE], maxlen=WINDOW_SIZE)
 }
 
-parser = reqparse.RequestParser()
-parser.add_argument('respeck_data', type=list, location='json')
-parser.add_argument('Content-Type', location='headers')
+# parser = reqparse.RequestParser()
+# parser.add_argument('respeck_data', type=list, location='json')
+# parser.add_argument('Content-Type', location='headers')
 
 respeckData = api.model('RespeckData', {
     # 'mac': fields.String,
@@ -58,26 +58,28 @@ class RespeckData(Resource):
     })
     def get(self, respeck_mac):
         try:
-            r = {respeck_mac: data[respeck_mac]}
+            r = {respeck_mac: list(data[respeck_mac])}
             return r, 200
         except KeyError:
             return {}, 404
 
+    # @api.expect(parser)
     @api.expect(respeckData)
-    @api.expect(parser)
     def post(self, respeck_mac):
-        print(type(request.data))
+        j = request.json
+
+        # print(type(request.data))
         # print(request.json)
-        print(request.headers)
+        # print(request.headers)
         # print(respeck_mac)
         # print(parser)
-        args = parser.parse_args()
+        # args = parser.parse_args()
         # print(args)
         # mac = args['respeck_mac']
-        d = args['respeck_data']
+        d = j['respeck_data']
         # d = [[1,2,3]]
         # respeck_mac = 1
-        print(len(d))
+        # print(len(d))
         try:
             data[respeck_mac].extend(d)
         except KeyError:
