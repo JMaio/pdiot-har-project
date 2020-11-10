@@ -1,0 +1,65 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "docker-build",
+			"label": "docker-build",
+			"platform": "python",
+			"dockerBuild": {
+				"tag": "pdiotharproject:latest",
+				"dockerfile": "${workspaceFolder}/backend/Dockerfile",
+				"context": "${workspaceFolder}/backend",
+				"pull": true
+			}
+		},
+		{
+			"type": "docker-run",
+			"label": "docker-run: debug",
+			"dependsOn": [
+				"docker-build"
+			],
+			"dockerRun": {
+				"env": {
+					"FLASK_APP": "backend\\server.py"
+				}
+			},
+			"python": {
+				"args": [
+					"run",
+					"--no-debugger",
+					"--no-reload",
+					"--host",
+					"0.0.0.0",
+					"--port",
+					"5000"
+				],
+				"module": "flask"
+			}
+		},
+		{
+			"type": "shell",
+			"label": "generate android client",
+			"command": "openapi-generator-cli",
+			"args": [
+				"generate",
+				"-i http://192.168.1.105:5000/api/v1/swagger.json",
+				"-g java",
+				"-o ./pdiotapp/flaskServerClientTest",
+				"--additional-properties=androidSdkVersion=30"
+			],
+			"problemMatcher": []
+		},
+		// {
+		// 	"type": "shell",
+		// 	"label": "gunicorn - run flask server",
+		// 	"command": "pipenv",
+		// 	"args": [
+		// 		"run",
+		// 		"gunicorn",
+		// 		"--bind 0.0.0.0:5000",
+		// 		"backend\\server:app"
+		// 	],
+		// 	"problemMatcher": []
+		// }
+	]
+}
