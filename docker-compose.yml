@@ -1,0 +1,12 @@
+version: '3.4'
+
+services:
+  backend:
+    image: backend
+    build:
+      context: ./backend/
+      dockerfile: Dockerfile
+    ports:
+      - 5000:5000
+    command: python app.py
+    # command: gunicorn --bind 0.0.0.0:5000 backend\\server:app

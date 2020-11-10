@@ -10,7 +10,6 @@ requests = "*"
 flask = "*"
 flask-restplus = "*"
 werkzeug = "==0.16.1"
-gunicorn = "*"
 
 [requires]
-python_version = "3.8"
+python_version = "3.7"
