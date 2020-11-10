@@ -49,6 +49,20 @@
 			],
 			"problemMatcher": []
 		},
+		{
+			"type": "shell",
+			"label": "generate typescript client",
+			"command": "openapi-generator-cli",
+			"args": [
+				"generate",
+				"-i http://192.168.1.105:5000/api/v1/swagger.json",
+				"-g typescript-fetch",
+				"-o ./frontend/src/openapiClient",
+				// https://github.com/OpenAPITools/openapi-generator/issues/3869#issuecomment-584152932
+				"--additional-properties=typescriptThreePlus=true",
+			],
+			"problemMatcher": []
+		},
 		// {
 		// 	"type": "shell",
 		// 	"label": "gunicorn - run flask server",
