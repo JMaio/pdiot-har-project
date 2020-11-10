@@ -1,12 +1,15 @@
 import React from 'react';
-import logo from './logo.svg';
+// import logo from './logo.svg';
 import './App.css';
+import { PdiotChart } from './components/PdiotChart';
 
 function App() {
   return (
     <div className="App">
+      {/* < /> */}
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
+        <PdiotChart />
+        {/* <img src={logo} className="App-logo" alt="logo" />
         <p>
           Edit <code>src/App.tsx</code> and save to reload.
         </p>
@@ -17,7 +20,7 @@ function App() {
           rel="noopener noreferrer"
         >
           Learn React
-        </a>
+        </a> */}
       </header>
     </div>
   );
