@@ -43,7 +43,7 @@
 			"args": [
 				"generate",
 				"-i http://192.168.1.105:5000/api/v1/swagger.json",
-				"-g java",
+				"-g android",
 				"-o ./pdiotapp/flaskServerClientTest",
 				"--additional-properties=androidSdkVersion=30"
 			],
