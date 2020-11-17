@@ -61,6 +61,10 @@ public class JsonUtil {
       return new TypeToken<List<RespeckData>>(){}.getType();
     }
     
+    if ("RespeckPrediction".equalsIgnoreCase(className)) {
+      return new TypeToken<List<RespeckPrediction>>(){}.getType();
+    }
+    
     return new TypeToken<List<Object>>(){}.getType();
   }
 
@@ -69,6 +73,10 @@ public class JsonUtil {
     
     if ("RespeckData".equalsIgnoreCase(className)) {
       return new TypeToken<RespeckData>(){}.getType();
+    }
+    
+    if ("RespeckPrediction".equalsIgnoreCase(className)) {
+      return new TypeToken<RespeckPrediction>(){}.getType();
     }
     
     return new TypeToken<Object>(){}.getType();

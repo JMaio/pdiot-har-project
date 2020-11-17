@@ -23,7 +23,9 @@ import java.util.*;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 
+import java.math.BigDecimal;
 import org.openapitools.client.model.RespeckData;
+import org.openapitools.client.model.RespeckPrediction;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
@@ -171,9 +173,10 @@ public class DefaultApi {
   * 
   * 
    * @param respeckMac 
-   * @return void
+   * @param xFields An optional fields mask
+   * @return RespeckData
   */
-  public void getRespeckData (String respeckMac) throws TimeoutException, ExecutionException, InterruptedException, ApiException {
+  public RespeckData getRespeckData (String respeckMac, String xFields) throws TimeoutException, ExecutionException, InterruptedException, ApiException {
     Object postBody = null;
     // verify the required parameter 'respeckMac' is set
     if (respeckMac == null) {
@@ -183,6 +186,135 @@ public class DefaultApi {
 
     // create path and map variables
     String path = "/respeck/{respeck_mac}".replaceAll("\\{" + "respeck_mac" + "\\}", apiInvoker.escapeString(respeckMac.toString()));
+
+    // query params
+    List<Pair> queryParams = new ArrayList<Pair>();
+    // header params
+    Map<String, String> headerParams = new HashMap<String, String>();
+    // form params
+    Map<String, String> formParams = new HashMap<String, String>();
+    headerParams.put("X-Fields", ApiInvoker.parameterToString(xFields));
+    String[] contentTypes = {
+    };
+    String contentType = contentTypes.length > 0 ? contentTypes[0] : "application/json";
+
+    if (contentType.startsWith("multipart/form-data")) {
+      // file uploading
+      MultipartEntityBuilder localVarBuilder = MultipartEntityBuilder.create();
+      HttpEntity httpEntity = localVarBuilder.build();
+      postBody = httpEntity;
+    } else {
+      // normal form params
+    }
+
+    String[] authNames = new String[] {  };
+
+    try {
+      String localVarResponse = apiInvoker.invokeAPI (basePath, path, "GET", queryParams, postBody, headerParams, formParams, contentType, authNames);
+      if (localVarResponse != null) {
+         return (RespeckData) ApiInvoker.deserialize(localVarResponse, "", RespeckData.class);
+      } else {
+         return null;
+      }
+    } catch (ApiException ex) {
+       throw ex;
+    } catch (InterruptedException ex) {
+       throw ex;
+    } catch (ExecutionException ex) {
+      if (ex.getCause() instanceof VolleyError) {
+        VolleyError volleyError = (VolleyError)ex.getCause();
+        if (volleyError.networkResponse != null) {
+          throw new ApiException(volleyError.networkResponse.statusCode, volleyError.getMessage());
+        }
+      }
+      throw ex;
+    } catch (TimeoutException ex) {
+      throw ex;
+    }
+  }
+
+      /**
+   * 
+   * 
+   * @param respeckMac    * @param xFields An optional fields mask
+  */
+  public void getRespeckData (String respeckMac, String xFields, final Response.Listener<RespeckData> responseListener, final Response.ErrorListener errorListener) {
+    Object postBody = null;
+
+    // verify the required parameter 'respeckMac' is set
+    if (respeckMac == null) {
+      VolleyError error = new VolleyError("Missing the required parameter 'respeckMac' when calling getRespeckData",
+        new ApiException(400, "Missing the required parameter 'respeckMac' when calling getRespeckData"));
+    }
+
+    // create path and map variables
+    String path = "/respeck/{respeck_mac}".replaceAll("\\{format\\}","json").replaceAll("\\{" + "respeck_mac" + "\\}", apiInvoker.escapeString(respeckMac.toString()));
+
+    // query params
+    List<Pair> queryParams = new ArrayList<Pair>();
+    // header params
+    Map<String, String> headerParams = new HashMap<String, String>();
+    // form params
+    Map<String, String> formParams = new HashMap<String, String>();
+
+
+    headerParams.put("X-Fields", ApiInvoker.parameterToString(xFields));
+
+    String[] contentTypes = {
+      
+    };
+    String contentType = contentTypes.length > 0 ? contentTypes[0] : "application/json";
+
+    if (contentType.startsWith("multipart/form-data")) {
+      // file uploading
+      MultipartEntityBuilder localVarBuilder = MultipartEntityBuilder.create();
+      
+
+      HttpEntity httpEntity = localVarBuilder.build();
+      postBody = httpEntity;
+    } else {
+      // normal form params
+          }
+
+    String[] authNames = new String[] {  };
+
+    try {
+      apiInvoker.invokeAPI(basePath, path, "GET", queryParams, postBody, headerParams, formParams, contentType, authNames,
+        new Response.Listener<String>() {
+          @Override
+          public void onResponse(String localVarResponse) {
+            try {
+              responseListener.onResponse((RespeckData) ApiInvoker.deserialize(localVarResponse,  "", RespeckData.class));
+            } catch (ApiException exception) {
+               errorListener.onErrorResponse(new VolleyError(exception));
+            }
+          }
+      }, new Response.ErrorListener() {
+          @Override
+          public void onErrorResponse(VolleyError error) {
+            errorListener.onErrorResponse(error);
+          }
+      });
+    } catch (ApiException ex) {
+      errorListener.onErrorResponse(new VolleyError(ex));
+    }
+  }
+  /**
+  * 
+  * 
+   * @param respeckMac 
+   * @return List<BigDecimal>
+  */
+  public List<BigDecimal> getRespeckStreamedData (String respeckMac) throws TimeoutException, ExecutionException, InterruptedException, ApiException {
+    Object postBody = null;
+    // verify the required parameter 'respeckMac' is set
+    if (respeckMac == null) {
+      VolleyError error = new VolleyError("Missing the required parameter 'respeckMac' when calling getRespeckStreamedData",
+        new ApiException(400, "Missing the required parameter 'respeckMac' when calling getRespeckStreamedData"));
+    }
+
+    // create path and map variables
+    String path = "/respeck/stream/{respeck_mac}".replaceAll("\\{" + "respeck_mac" + "\\}", apiInvoker.escapeString(respeckMac.toString()));
 
     // query params
     List<Pair> queryParams = new ArrayList<Pair>();
@@ -208,9 +340,9 @@ public class DefaultApi {
     try {
       String localVarResponse = apiInvoker.invokeAPI (basePath, path, "GET", queryParams, postBody, headerParams, formParams, contentType, authNames);
       if (localVarResponse != null) {
-         return ;
+         return (List<BigDecimal>) ApiInvoker.deserialize(localVarResponse, "array", BigDecimal.class);
       } else {
-         return ;
+         return null;
       }
     } catch (ApiException ex) {
        throw ex;
@@ -234,17 +366,17 @@ public class DefaultApi {
    * 
    * @param respeckMac 
   */
-  public void getRespeckData (String respeckMac, final Response.Listener<String> responseListener, final Response.ErrorListener errorListener) {
+  public void getRespeckStreamedData (String respeckMac, final Response.Listener<List<BigDecimal>> responseListener, final Response.ErrorListener errorListener) {
     Object postBody = null;
 
     // verify the required parameter 'respeckMac' is set
     if (respeckMac == null) {
-      VolleyError error = new VolleyError("Missing the required parameter 'respeckMac' when calling getRespeckData",
-        new ApiException(400, "Missing the required parameter 'respeckMac' when calling getRespeckData"));
+      VolleyError error = new VolleyError("Missing the required parameter 'respeckMac' when calling getRespeckStreamedData",
+        new ApiException(400, "Missing the required parameter 'respeckMac' when calling getRespeckStreamedData"));
     }
 
     // create path and map variables
-    String path = "/respeck/{respeck_mac}".replaceAll("\\{format\\}","json").replaceAll("\\{" + "respeck_mac" + "\\}", apiInvoker.escapeString(respeckMac.toString()));
+    String path = "/respeck/stream/{respeck_mac}".replaceAll("\\{format\\}","json").replaceAll("\\{" + "respeck_mac" + "\\}", apiInvoker.escapeString(respeckMac.toString()));
 
     // query params
     List<Pair> queryParams = new ArrayList<Pair>();
@@ -278,7 +410,11 @@ public class DefaultApi {
         new Response.Listener<String>() {
           @Override
           public void onResponse(String localVarResponse) {
-              responseListener.onResponse(localVarResponse);
+            try {
+              responseListener.onResponse((List<BigDecimal>) ApiInvoker.deserialize(localVarResponse,  "array", BigDecimal.class));
+            } catch (ApiException exception) {
+               errorListener.onErrorResponse(new VolleyError(exception));
+            }
           }
       }, new Response.ErrorListener() {
           @Override
@@ -295,9 +431,10 @@ public class DefaultApi {
   * 
    * @param respeckMac 
    * @param payload 
-   * @return void
+   * @param xFields An optional fields mask
+   * @return RespeckPrediction
   */
-  public void postRespeckData (String respeckMac, RespeckData payload) throws TimeoutException, ExecutionException, InterruptedException, ApiException {
+  public RespeckPrediction postRespeckData (String respeckMac, RespeckData payload, String xFields) throws TimeoutException, ExecutionException, InterruptedException, ApiException {
     Object postBody = payload;
     // verify the required parameter 'respeckMac' is set
     if (respeckMac == null) {
@@ -319,6 +456,7 @@ public class DefaultApi {
     Map<String, String> headerParams = new HashMap<String, String>();
     // form params
     Map<String, String> formParams = new HashMap<String, String>();
+    headerParams.put("X-Fields", ApiInvoker.parameterToString(xFields));
     String[] contentTypes = {
       "application/json"
     };
@@ -338,9 +476,9 @@ public class DefaultApi {
     try {
       String localVarResponse = apiInvoker.invokeAPI (basePath, path, "POST", queryParams, postBody, headerParams, formParams, contentType, authNames);
       if (localVarResponse != null) {
-         return ;
+         return (RespeckPrediction) ApiInvoker.deserialize(localVarResponse, "", RespeckPrediction.class);
       } else {
-         return ;
+         return null;
       }
     } catch (ApiException ex) {
        throw ex;
@@ -362,9 +500,9 @@ public class DefaultApi {
       /**
    * 
    * 
-   * @param respeckMac    * @param payload 
+   * @param respeckMac    * @param payload    * @param xFields An optional fields mask
   */
-  public void postRespeckData (String respeckMac, RespeckData payload, final Response.Listener<String> responseListener, final Response.ErrorListener errorListener) {
+  public void postRespeckData (String respeckMac, RespeckData payload, String xFields, final Response.Listener<RespeckPrediction> responseListener, final Response.ErrorListener errorListener) {
     Object postBody = payload;
 
     // verify the required parameter 'respeckMac' is set
@@ -389,6 +527,7 @@ public class DefaultApi {
     Map<String, String> formParams = new HashMap<String, String>();
 
 
+    headerParams.put("X-Fields", ApiInvoker.parameterToString(xFields));
 
     String[] contentTypes = {
       "application/json"
@@ -413,7 +552,11 @@ public class DefaultApi {
         new Response.Listener<String>() {
           @Override
           public void onResponse(String localVarResponse) {
-              responseListener.onResponse(localVarResponse);
+            try {
+              responseListener.onResponse((RespeckPrediction) ApiInvoker.deserialize(localVarResponse,  "", RespeckPrediction.class));
+            } catch (ApiException exception) {
+               errorListener.onErrorResponse(new VolleyError(exception));
+            }
           }
       }, new Response.ErrorListener() {
           @Override

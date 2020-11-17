@@ -154,21 +154,23 @@ class LiveDataFragment : Fragment() {
                     position: Int,
                     id: Long
                 ) {
-                    // https://stackoverflow.com/a/58665768/9184658
-                    Snackbar.make(
-                        modelPredictionActivityText,
-                        "Selected model '${adapter.getItem(position)}'",
-                        Snackbar.LENGTH_SHORT
-                    ).apply {
-                        setAnchorView(R.id.bottom_nav_fab)
-                    }.show()
+                    val name = adapter.getItem(position) as String
                     activityClassifier
-                        .initialize(adapter.getItem(position) as String)
+                        .initialize(name)
                         .addOnSuccessListener {
                             val w = activityClassifier.windowSize
                             respeckDataQueue = EvictingQueue.create(w)
                             // fill with zero packets
                             respeckDataQueue.addAll((1..w).map { zeroRespeckData })
+                            Log.i(TAG, "Set up activity classifier '$name'")
+                            // https://stackoverflow.com/a/58665768/9184658
+                            Snackbar.make(
+                                modelPredictionActivityText,
+                                "Selected model '$name' (ws=${w})",
+                                Snackbar.LENGTH_SHORT
+                            ).apply {
+                                setAnchorView(R.id.bottom_nav_fab)
+                            }.show()
                         }
                         .addOnFailureListener { e ->
                             Log.e(TAG, "Error setting up activity classifier.", e)
@@ -225,19 +227,21 @@ class LiveDataFragment : Fragment() {
                     respeckDataQueue.add(data)
                     Log.d(TAG, "respeckDataQueue head = ${respeckDataQueue.peek()}")
 
-                    val interval = 50;
+                    val interval = 25;
 
                     if (time % interval == 0) {
                         // only update every 5 data points
                         classifyActivity(respeckDataQueue.toList())
 
                         try {
-                            flaskApi.postRespeckData(respeckUUID.replace(':', '-'),
+                            flaskApi.postRespeckData(
+                                respeckUUID.replace(':', '-'),
                                 org.openapitools.client.model.RespeckData().apply {
-                                    respeckData = respeckDataQueue.take(interval).map { d ->
+                                    respeckData = respeckDataQueue.map { d ->
                                         listOf(d.accel_x, d.accel_y, d.accel_z).map { it.toBigDecimal() }
                                     }.toList()
-                                }
+                                },
+                                ""
                             )
                         } catch (e: ApiException) {
                             print(e)

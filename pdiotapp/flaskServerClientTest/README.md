@@ -83,12 +83,14 @@ Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 *DefaultApi* | [**getFullData**](docs/DefaultApi.md#getFullData) | **GET** /data | 
 *DefaultApi* | [**getRespeckData**](docs/DefaultApi.md#getRespeckData) | **GET** /respeck/{respeck_mac} | 
+*DefaultApi* | [**getRespeckStreamedData**](docs/DefaultApi.md#getRespeckStreamedData) | **GET** /respeck/stream/{respeck_mac} | 
 *DefaultApi* | [**postRespeckData**](docs/DefaultApi.md#postRespeckData) | **POST** /respeck/{respeck_mac} | 
 
 
 ## Documentation for Models
 
  - [RespeckData](docs/RespeckData.md)
+ - [RespeckPrediction](docs/RespeckPrediction.md)
 
 
 ## Documentation for Authorization
