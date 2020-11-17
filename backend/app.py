@@ -66,7 +66,11 @@ respeckData = api.model('RespeckData', {
 #         'z': fields.Float,
 #     }
 # })
-
+respeckPrediction = api.model('RespeckPrediction', {
+    'predictions': fields.List(fields.Float),
+    'label': fields.Integer,
+    'activity': fields.String,
+})
 
 # @api.route('/respeck', defaults={'respeck_mac': ""})
 @api.route('/respeck/<string:respeck_mac>')
@@ -88,8 +92,9 @@ class RespeckData(Resource):
             return {}, 404
 
     # @api.expect(parser)
-    @api.expect(respeckData)
     # @api.consumes(["application/json"])
+    @api.expect(respeckData)
+    @api.marshal_with(respeckPrediction, code=200, description='Model prediction')
     @api.produces(["application/json"])
     def post(self, respeck_mac):
         j = request.json
