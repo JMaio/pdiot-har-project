@@ -2,13 +2,15 @@
 from flask import Flask, request, Response
 # from flask_restful import Resource , Api
 # from flask_restful_swagger_3 import Api, Resource, swagger
-from flask_restplus import fields, Resource, Api, reqparse
+from flask_restx import fields, Resource, Api, reqparse
 # from werkzeug.exceptions import BadRequest
 from flask_cors import CORS
 import time
 import json
 from stream_queue import StreamWriter
-import threading
+from predictor import Predictor
+from pathlib import Path
+import numpy as np
 
 # https://stackoverflow.com/a/22772916/9184658
 from collections import deque
@@ -20,7 +22,13 @@ OPENAPI_FILE = 'openapi.json'
 # # https://pypi.org/project/flask-restful-swagger-3/
 # SWAGGER_URL = ''  # URL for exposing Swagger UI (without trailing '/')
 # API_URL = ''  # Our API url (can of course be a local resource)
-WINDOW_SIZE = 50
+WINDOW_SIZE = 100
+
+p = Path('./tensorflow/models') 
+model_name = 'cnn_model_fft_filtered01_sf_nomove_2_Chest_Right.tflite'
+model = p / model_name
+
+interpreter = Predictor(str(model.absolute()))
 
 app = Flask(__name__)
 api = Api(
@@ -86,18 +94,8 @@ class RespeckData(Resource):
     def post(self, respeck_mac):
         j = request.json
 
-        # print(type(request.data))
-        # print(request.json)
-        # print(request.headers)
-        # print(respeck_mac)
-        # print(parser)
-        # args = parser.parse_args()
-        # print(args)
-        # mac = args['respeck_mac']
         d = j['respeck_data']
-        # d = [[1,2,3]]
-        # respeck_mac = 1
-        # print(len(d))
+
         try:
             data[respeck_mac].extend(d)
             streams[respeck_mac].writelines(d)
@@ -107,10 +105,20 @@ class RespeckData(Resource):
             s.writelines(d)
             streams[respeck_mac] = s
 
-        return {
+        npdata = np.array(d, dtype=np.float32).reshape((WINDOW_SIZE, -1))
+        print(npdata.shape)
+        p, l, a = interpreter.make_prediction_on_data(npdata, fft=True)
+
+        res = {
             # 'mac': respeck_mac,
-            'respeck_data': list(data[respeck_mac])
+            # 'respeck_data': list(data[respeck_mac])
+            'predictions': p.flatten().tolist(),
+            'label': l.item(),
+            'activity': a,
         }
+        print(res)
+
+        return res
 
 respeckStreamedData = api.model('RespeckStreamedData', {
     # 'mac': fields.String,

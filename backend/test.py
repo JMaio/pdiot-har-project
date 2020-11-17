@@ -28,7 +28,8 @@ if __name__ == "__main__":
     url = f'http://localhost:5000/api/v1/respeck/{r.mac}'
 
     while True:
-        print(time.time())
-        d = r.get_data(window=25)
+        # print(time.time())
+        d = r.get_data(window=100)
         p = post(url, json={'respeck_data': d})
+        print(p.text)
         # time.sleep(1)
