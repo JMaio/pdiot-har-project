@@ -28,10 +28,8 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.common.collect.EvictingQueue
 import com.specknet.pdiotapp.R
 import com.specknet.pdiotapp.utils.*
-import kotlinx.android.synthetic.main.activity_live_data.*
 import org.openapitools.client.ApiException
 import org.openapitools.client.api.DefaultApi
-import java.math.BigDecimal
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.DelayQueue
 import kotlin.math.roundToInt
@@ -72,6 +70,8 @@ class LiveDataFragment : Fragment() {
     private lateinit var modelSelector: Spinner
     private lateinit var modelPredictionActivityText: TextView
     private lateinit var modelPredictionConfidence: TextView
+    private lateinit var networkModelPredictionActivityText: TextView
+    private lateinit var networkModelPredictionConfidence: TextView
     private lateinit var modelChoiceAdapter: ArrayAdapter<String>
     private lateinit var models: List<String>
 
@@ -144,17 +144,18 @@ class LiveDataFragment : Fragment() {
         val accelZ = view.findViewById<TextView>(R.id.accel_z)
         val magTextView = view.findViewById<TextView>(R.id.magTextView)
 
-        modelSelector = view.findViewById(R.id.modelSelectionSpinner)
-        modelSelector.apply {
-            adapter = modelChoiceAdapter
-            onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(
-                    parent: AdapterView<*>?,
-                    view: View?,
-                    position: Int,
-                    id: Long
-                ) {
-                    val name = adapter.getItem(position) as String
+//        modelSelector = view.findViewById(R.id.modelSelectionSpinner)
+//        modelSelector.apply {
+//            adapter = modelChoiceAdapter
+//            onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+//                override fun onItemSelected(
+//                    parent: AdapterView<*>?,
+//                    view: View?,
+//                    position: Int,
+//                    id: Long
+//                ) {
+//                    val name = adapter.getItem(position) as String
+                    val name = "cnn_model_4ChestRight.tflite"
                     activityClassifier
                         .initialize(name)
                         .addOnSuccessListener {
@@ -175,14 +176,18 @@ class LiveDataFragment : Fragment() {
                         .addOnFailureListener { e ->
                             Log.e(TAG, "Error setting up activity classifier.", e)
                         }
-                }
+//                }
+//
+//                override fun onNothingSelected(parent: AdapterView<*>?) {}
+//            }
+//        }
 
-                override fun onNothingSelected(parent: AdapterView<*>?) {}
-            }
-        }
 
         modelPredictionActivityText = view.findViewById(R.id.modelPredictionActivityText)
         modelPredictionConfidence = view.findViewById(R.id.modelPredictionConfidence)
+
+        networkModelPredictionActivityText = view.findViewById(R.id.networkModelPredictionActivityText)
+        networkModelPredictionConfidence = view.findViewById(R.id.networkModelPredictionConfidence)
 
         connectToApi()
 
@@ -242,7 +247,16 @@ class LiveDataFragment : Fragment() {
                                     }.toList()
                                 },
                                 ""
-                            )
+                            ).also { pred ->
+//                                Log.d(TAG, "prediction response => ${pred}")
+                                val conf = String.format("%.2f%%", 100 * pred.predictions[pred.label].toFloat())
+                                Log.d(TAG, "prediction response => activity   = ${pred.activity}")
+                                Log.d(TAG, "                       confidence = ${conf}")
+                                runOnUiThread {
+                                    networkModelPredictionActivityText.text = pred.activity
+                                    networkModelPredictionConfidence.text = conf
+                                }
+                            }
                         } catch (e: ApiException) {
                             print(e)
 //                            Snackbar.make()
@@ -251,12 +265,12 @@ class LiveDataFragment : Fragment() {
                             connectToApi()
                         }
 
-                        runOnUiThread {
-                            accelX.text = getString(R.string.s_eq_4f, getString(R.string.accel_x), x)
-                            accelY.text = getString(R.string.s_eq_4f, getString(R.string.accel_y), y)
-                            accelZ.text = getString(R.string.s_eq_4f, getString(R.string.accel_z), z)
-                            magTextView.text = getString(R.string.s_eq_4f, getString(R.string.accel_mag), mag)
-                        }
+//                        runOnUiThread {
+//                            accelX.text = getString(R.string.s_eq_4f, getString(R.string.accel_x), x)
+//                            accelY.text = getString(R.string.s_eq_4f, getString(R.string.accel_y), y)
+//                            accelZ.text = getString(R.string.s_eq_4f, getString(R.string.accel_z), z)
+//                            magTextView.text = getString(R.string.s_eq_4f, getString(R.string.accel_mag), mag)
+//                        }
                     }
 
                     time += 1

@@ -97,7 +97,10 @@ class RespeckData(Resource):
     @api.marshal_with(respeckPrediction, code=200, description='Model prediction')
     @api.produces(["application/json"])
     def post(self, respeck_mac):
+        # print(request.data)
+        # print(request.headers)
         j = request.json
+        # print(j)
 
         d = j['respeck_data']
 
@@ -110,7 +113,7 @@ class RespeckData(Resource):
             s.writelines(d)
             streams[respeck_mac] = s
 
-        npdata = np.array(d, dtype=np.float32).reshape((WINDOW_SIZE, -1))
+        npdata = np.array(d, dtype=np.float32).reshape((-1, 3))
         print(npdata.shape)
         p, l, a = interpreter.make_prediction_on_data(npdata, fft=True)
 
