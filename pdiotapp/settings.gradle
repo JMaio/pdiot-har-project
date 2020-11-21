@@ -1,2 +1,4 @@
+// add openapi client library
+include ':flaskServerClientTest'
 include ':app'
 rootProject.name = "PDIoTApp"

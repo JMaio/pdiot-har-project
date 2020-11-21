@@ -103,16 +103,16 @@ class ActivityClassifier(private val context: Context) {
 
         var elapsedTime: Long
         var startTime = System.nanoTime()
-        val result = Array(1) { FloatArray(OUTPUT_CLASSES_COUNT) }
+        val result = Array(1) { FloatArray(OUTPUT_ACTIVITIES_COUNT) }
         // run interpreter, return results to array
         interpreter?.run(byteBuffer, result)
         elapsedTime = (System.nanoTime() - startTime) / 1000000
         Log.d(TAG, "Inference time = " + elapsedTime + "ms")
 
         return ClassificationResults(result[0].mapIndexed { i, f ->
-            Log.d(TAG, "inference: ${Constants.ACTIVITY_CATEGORIES[i]} => $f")
+            Log.d(TAG, "inference: ${Constants.AVAILABLE_ACTIVITIES[i]} => $f")
             ClassificationResult(
-                Constants.ACTIVITY_CATEGORIES[i],
+                Constants.AVAILABLE_ACTIVITIES[i],
 //                Constants.ACTIVITY_CODE_TO_NAME_MAPPING
 //                    .getOrDefault(Constants.TFCODE_TO_ACTIVITY_CODE[i], "Unknown"),
                 f

@@ -14,7 +14,10 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.ArrayAdapter
+import android.widget.ProgressBar
+import android.widget.Spinner
+import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -28,7 +31,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.common.collect.EvictingQueue
 import com.specknet.pdiotapp.R
 import com.specknet.pdiotapp.utils.*
-import kotlinx.android.synthetic.main.activity_live_data.*
+import org.openapitools.client.apis.DefaultApi
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.DelayQueue
 import kotlin.math.roundToInt
@@ -36,9 +39,15 @@ import kotlin.math.sqrt
 
 
 class LiveDataFragment : Fragment() {
+    companion object {
+        const val API_BASE_PATH = "http://192.168.1.105:5000/api/v1"
+        private const val TAG = "LiveDataActivity"
+    }
+
     override fun setRetainInstance(retain: Boolean) {
         super.setRetainInstance(true)
     }
+
     // assets
     lateinit var assetManager: AssetManager
     lateinit var ctx: Context
@@ -65,6 +74,8 @@ class LiveDataFragment : Fragment() {
     private lateinit var modelSelector: Spinner
     private lateinit var modelPredictionActivityText: TextView
     private lateinit var modelPredictionConfidence: TextView
+    private lateinit var networkModelPredictionActivityText: TextView
+    private lateinit var networkModelPredictionConfidence: TextView
     private lateinit var modelChoiceAdapter: ArrayAdapter<String>
     private lateinit var models: List<String>
 
@@ -76,6 +87,9 @@ class LiveDataFragment : Fragment() {
     private lateinit var recyclerViewCategory: RecyclerView
     private lateinit var recyclerViewCategoryAdapter: RecyclerView.Adapter<*>
     private lateinit var recyclerViewCategoryManager: RecyclerView.LayoutManager
+
+    private lateinit var flaskApi: DefaultApi
+    private lateinit var respeckUUID: String
 
     // EvictingQueue from Guava, alternative could be Apache CircularFifoQueue
     // initialize zero-size queue to prevent errors
@@ -106,7 +120,9 @@ class LiveDataFragment : Fragment() {
 
         assetManager = ctx.assets
         // grab files with tflite extensions
-        models = assetManager.list(ActivityClassifier.MODEL_DIR)?.filter { f -> f.endsWith(".tflite") }.orEmpty()
+        models =
+            assetManager.list(ActivityClassifier.MODEL_DIR)?.filter { f -> f.endsWith(".tflite") }
+                .orEmpty()
         Log.i(TAG, "models found: $models")
 
         modelChoiceAdapter = ArrayAdapter<String>(
@@ -129,48 +145,58 @@ class LiveDataFragment : Fragment() {
         val view: View = inflater.inflate(R.layout.activity_live_data, container, false)
 
         // get the accel fields
-        val accelX = view.findViewById<TextView>(R.id.accel_x)
-        val accelY = view.findViewById<TextView>(R.id.accel_y)
-        val accelZ = view.findViewById<TextView>(R.id.accel_z)
-        val magTextView = view.findViewById<TextView>(R.id.magTextView)
+//        val accelX = view.findViewById<TextView>(R.id.accel_x)
+//        val accelY = view.findViewById<TextView>(R.id.accel_y)
+//        val accelZ = view.findViewById<TextView>(R.id.accel_z)
+//        val magTextView = view.findViewById<TextView>(R.id.magTextView)
 
-        modelSelector = view.findViewById(R.id.modelSelectionSpinner)
-        modelSelector.apply {
-            adapter = modelChoiceAdapter
-            onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(
-                    parent: AdapterView<*>?,
-                    view: View?,
-                    position: Int,
-                    id: Long
-                ) {
-                    // https://stackoverflow.com/a/58665768/9184658
-                    Snackbar.make(
-                        modelPredictionActivityText,
-                        "Selected model '${adapter.getItem(position)}'",
-                        Snackbar.LENGTH_SHORT
-                    ).apply {
-                        setAnchorView(R.id.bottom_nav_fab)
-                    }.show()
-                    activityClassifier
-                        .initialize(adapter.getItem(position) as String)
-                        .addOnSuccessListener {
-                            val w = activityClassifier.windowSize
-                            respeckDataQueue = EvictingQueue.create(w)
-                            // fill with zero packets
-                            respeckDataQueue.addAll((1..w).map { zeroRespeckData })
-                        }
-                        .addOnFailureListener { e ->
-                            Log.e(TAG, "Error setting up activity classifier.", e)
-                        }
-                }
-
-                override fun onNothingSelected(parent: AdapterView<*>?) {}
+//        modelSelector = view.findViewById(R.id.modelSelectionSpinner)
+//        modelSelector.apply {
+//            adapter = modelChoiceAdapter
+//            onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+//                override fun onItemSelected(
+//                    parent: AdapterView<*>?,
+//                    view: View?,
+//                    position: Int,
+//                    id: Long
+//                ) {
+//                    val name = adapter.getItem(position) as String
+        val name = "cnn_model_4ChestRight.tflite"
+        activityClassifier
+            .initialize(name)
+            .addOnSuccessListener {
+                val w = activityClassifier.windowSize
+                respeckDataQueue = EvictingQueue.create(w)
+                // fill with zero packets
+                respeckDataQueue.addAll((1..w).map { zeroRespeckData })
+                Log.i(TAG, "Set up activity classifier '$name'")
+                // https://stackoverflow.com/a/58665768/9184658
+                Snackbar.make(
+                    modelPredictionActivityText,
+                    "Selected model '$name' (ws=${w})",
+                    Snackbar.LENGTH_SHORT
+                ).apply {
+                    setAnchorView(R.id.bottom_nav_fab)
+                }.show()
             }
-        }
+            .addOnFailureListener { e ->
+                Log.e(TAG, "Error setting up activity classifier.", e)
+            }
+//                }
+//
+//                override fun onNothingSelected(parent: AdapterView<*>?) {}
+//            }
+//        }
+
 
         modelPredictionActivityText = view.findViewById(R.id.modelPredictionActivityText)
         modelPredictionConfidence = view.findViewById(R.id.modelPredictionConfidence)
+
+        networkModelPredictionActivityText =
+            view.findViewById(R.id.networkModelPredictionActivityText)
+        networkModelPredictionConfidence = view.findViewById(R.id.networkModelPredictionConfidence)
+
+        connectToApi()
 
 //        Log.i(TAG, "assets: ${assets.list("")?.map { s -> s }}")
 
@@ -179,6 +205,10 @@ class LiveDataFragment : Fragment() {
         setupChart(view)
 //
         setupRecyclerViews(view)
+
+        val sharedPreferences =
+            ctx.getSharedPreferences(Constants.PREFERENCES_FILE, Context.MODE_PRIVATE)
+        respeckUUID = sharedPreferences.getString(Constants.RESPECK_MAC_ADDRESS_PREF, "").toString()
 
         // set up the broadcast receiver
         respeckLiveUpdateReceiver = object : BroadcastReceiver() {
@@ -210,20 +240,63 @@ class LiveDataFragment : Fragment() {
                     respeckDataQueue.add(data)
                     Log.d(TAG, "respeckDataQueue head = ${respeckDataQueue.peek()}")
 
-                    if (time % 5 == 0) {
-                        // only update every 5 data points
-                        classifyActivity(respeckDataQueue.toList())
-
-                        runOnUiThread {
-                            accelX.text = getString(R.string.s_eq_4f, getString(R.string.accel_x), x)
-                            accelY.text = getString(R.string.s_eq_4f, getString(R.string.accel_y), y)
-                            accelZ.text = getString(R.string.s_eq_4f, getString(R.string.accel_z), z)
-                            magTextView.text = getString(R.string.s_eq_4f, getString(R.string.accel_mag), mag)
-                        }
-                    }
+                    val interval = 25;
 
                     time += 1
                     updateGraph()
+
+                    if (time % interval == 0) {
+                        // only update every 5 data points
+                        classifyActivity(respeckDataQueue.toList())
+                        try {
+                            // coroutine, runs asynchronously
+                            // https://kotlinlang.org/docs/tutorials/coroutines/coroutines-basic-jvm.html
+                            // https://developer.android.com/kotlin/coroutines
+                            flaskApi.postRespeckData(
+                                respeckUUID.replace(':', '-'),
+                                org.openapitools.client.models.RespeckData(
+                                    respeckDataQueue.map { d ->
+                                        listOf(
+                                            d.accel_x,
+                                            d.accel_y,
+                                            d.accel_z
+                                        ).map { it.toBigDecimal() }
+                                    }.toList()
+                                ),
+                                ""
+//                                org.openapitools.client.models.RespeckData().apply {
+//                                    respeckData = respeckDataQueue.map { d ->
+//                                        listOf(d.accel_x, d.accel_y, d.accel_z).map { it.toBigDecimal() }
+//                                    }.toList()
+//                                },
+                            ).also { pred ->
+                                Log.d(TAG, "prediction response => $pred")
+                                //      pred.predictions[pred.label].toFloat()
+                                val p = pred.label?.let { pred.predictions?.get(it) } ?: 0
+                                val conf = String.format("%.2f%%", 100 * p.toFloat())
+                                Log.d(TAG, "prediction response => activity   = ${pred.activity}")
+                                Log.d(TAG, "                       confidence = ${conf}")
+                                runOnUiThread {
+                                    networkModelPredictionActivityText.text = pred.activity
+                                    networkModelPredictionConfidence.text = conf
+                                }
+                            }
+                        } catch (e: Exception) {
+//                            when (e) {
+//                                is ClientException ->
+//                            }
+                            // probably disconnected
+                            Log.e(TAG, "Failed to send data to API: $e\nRetrying...")
+                            connectToApi()
+                        }
+                    }
+
+//                        runOnUiThread {
+//                            accelX.text = getString(R.string.s_eq_4f, getString(R.string.accel_x), x)
+//                            accelY.text = getString(R.string.s_eq_4f, getString(R.string.accel_y), y)
+//                            accelZ.text = getString(R.string.s_eq_4f, getString(R.string.accel_z), z)
+//                            magTextView.text = getString(R.string.s_eq_4f, getString(R.string.accel_mag), mag)
+//                        }
                 }
             }
         }
@@ -453,7 +526,11 @@ class LiveDataFragment : Fragment() {
         }
     }
 
-    companion object {
-        private const val TAG = "LiveDataActivity"
+    private fun connectToApi() {
+        try {
+            flaskApi = DefaultApi(API_BASE_PATH)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed connection to API: $e")
+        }
     }
 }

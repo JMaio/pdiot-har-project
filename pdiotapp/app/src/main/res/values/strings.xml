@@ -57,6 +57,7 @@
     <string name="tfe_dc_classification_error_message">Error classifying activity: %s</string>
     <string name="live">Live</string>
     <string name="record">Record</string>
+    <string name="timeline">Timeline</string>
     <string name="activities">Activities</string>
     <string name="categories">Categories</string>
 </resources>
