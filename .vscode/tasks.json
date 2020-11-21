@@ -43,15 +43,15 @@
 			"args": [
 				"generate",
 				"-i http://192.168.1.105:5000/api/v1/swagger.json",
-				"-g android",
+				"-g kotlin",
 				"-o ./pdiotapp/flaskServerClientTest",
-				"--additional-properties=androidSdkVersion=30"
+				"--additional-properties=androidSdkVersion=30,library=multiplatform,serializationLibrary=gson,collectionType=list"
 			],
 			"problemMatcher": []
 		},
 		{
 			"type": "shell",
-			"label": "generate typescript client",
+			"label": "generate typescript client (v5.0.0-beta3)",
 			"command": "openapi-generator-cli",
 			"args": [
 				"generate",

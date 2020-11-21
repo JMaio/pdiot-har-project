@@ -14,10 +14,12 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.ArrayAdapter
+import android.widget.ProgressBar
+import android.widget.Spinner
+import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.github.mikephil.charting.charts.LineChart
@@ -29,9 +31,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.common.collect.EvictingQueue
 import com.specknet.pdiotapp.R
 import com.specknet.pdiotapp.utils.*
-import kotlinx.coroutines.launch
-import org.openapitools.client.ApiException
-import org.openapitools.client.api.DefaultApi
+import org.openapitools.client.apis.DefaultApi
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.DelayQueue
 import kotlin.math.roundToInt
@@ -43,9 +43,11 @@ class LiveDataFragment : Fragment() {
         const val API_BASE_PATH = "http://192.168.1.105:5000/api/v1"
         private const val TAG = "LiveDataActivity"
     }
+
     override fun setRetainInstance(retain: Boolean) {
         super.setRetainInstance(true)
     }
+
     // assets
     lateinit var assetManager: AssetManager
     lateinit var ctx: Context
@@ -118,7 +120,9 @@ class LiveDataFragment : Fragment() {
 
         assetManager = ctx.assets
         // grab files with tflite extensions
-        models = assetManager.list(ActivityClassifier.MODEL_DIR)?.filter { f -> f.endsWith(".tflite") }.orEmpty()
+        models =
+            assetManager.list(ActivityClassifier.MODEL_DIR)?.filter { f -> f.endsWith(".tflite") }
+                .orEmpty()
         Log.i(TAG, "models found: $models")
 
         modelChoiceAdapter = ArrayAdapter<String>(
@@ -157,27 +161,27 @@ class LiveDataFragment : Fragment() {
 //                    id: Long
 //                ) {
 //                    val name = adapter.getItem(position) as String
-                    val name = "cnn_model_4ChestRight.tflite"
-                    activityClassifier
-                        .initialize(name)
-                        .addOnSuccessListener {
-                            val w = activityClassifier.windowSize
-                            respeckDataQueue = EvictingQueue.create(w)
-                            // fill with zero packets
-                            respeckDataQueue.addAll((1..w).map { zeroRespeckData })
-                            Log.i(TAG, "Set up activity classifier '$name'")
-                            // https://stackoverflow.com/a/58665768/9184658
-                            Snackbar.make(
-                                modelPredictionActivityText,
-                                "Selected model '$name' (ws=${w})",
-                                Snackbar.LENGTH_SHORT
-                            ).apply {
-                                setAnchorView(R.id.bottom_nav_fab)
-                            }.show()
-                        }
-                        .addOnFailureListener { e ->
-                            Log.e(TAG, "Error setting up activity classifier.", e)
-                        }
+        val name = "cnn_model_4ChestRight.tflite"
+        activityClassifier
+            .initialize(name)
+            .addOnSuccessListener {
+                val w = activityClassifier.windowSize
+                respeckDataQueue = EvictingQueue.create(w)
+                // fill with zero packets
+                respeckDataQueue.addAll((1..w).map { zeroRespeckData })
+                Log.i(TAG, "Set up activity classifier '$name'")
+                // https://stackoverflow.com/a/58665768/9184658
+                Snackbar.make(
+                    modelPredictionActivityText,
+                    "Selected model '$name' (ws=${w})",
+                    Snackbar.LENGTH_SHORT
+                ).apply {
+                    setAnchorView(R.id.bottom_nav_fab)
+                }.show()
+            }
+            .addOnFailureListener { e ->
+                Log.e(TAG, "Error setting up activity classifier.", e)
+            }
 //                }
 //
 //                override fun onNothingSelected(parent: AdapterView<*>?) {}
@@ -188,7 +192,8 @@ class LiveDataFragment : Fragment() {
         modelPredictionActivityText = view.findViewById(R.id.modelPredictionActivityText)
         modelPredictionConfidence = view.findViewById(R.id.modelPredictionConfidence)
 
-        networkModelPredictionActivityText = view.findViewById(R.id.networkModelPredictionActivityText)
+        networkModelPredictionActivityText =
+            view.findViewById(R.id.networkModelPredictionActivityText)
         networkModelPredictionConfidence = view.findViewById(R.id.networkModelPredictionConfidence)
 
         connectToApi()
@@ -201,7 +206,8 @@ class LiveDataFragment : Fragment() {
 //
         setupRecyclerViews(view)
 
-        val sharedPreferences = ctx.getSharedPreferences(Constants.PREFERENCES_FILE, Context.MODE_PRIVATE)
+        val sharedPreferences =
+            ctx.getSharedPreferences(Constants.PREFERENCES_FILE, Context.MODE_PRIVATE)
         respeckUUID = sharedPreferences.getString(Constants.RESPECK_MAC_ADDRESS_PREF, "").toString()
 
         // set up the broadcast receiver
@@ -242,21 +248,32 @@ class LiveDataFragment : Fragment() {
                     if (time % interval == 0) {
                         // only update every 5 data points
                         classifyActivity(respeckDataQueue.toList())
-                        // coroutine, runs asynchronously
-                        // https://kotlinlang.org/docs/tutorials/coroutines/coroutines-basic-jvm.html
-                        // https://developer.android.com/kotlin/coroutines
                         try {
+                            // coroutine, runs asynchronously
+                            // https://kotlinlang.org/docs/tutorials/coroutines/coroutines-basic-jvm.html
+                            // https://developer.android.com/kotlin/coroutines
                             flaskApi.postRespeckData(
                                 respeckUUID.replace(':', '-'),
-                                org.openapitools.client.model.RespeckData().apply {
-                                    respeckData = respeckDataQueue.map { d ->
-                                        listOf(d.accel_x, d.accel_y, d.accel_z).map { it.toBigDecimal() }
+                                org.openapitools.client.models.RespeckData(
+                                    respeckDataQueue.map { d ->
+                                        listOf(
+                                            d.accel_x,
+                                            d.accel_y,
+                                            d.accel_z
+                                        ).map { it.toBigDecimal() }
                                     }.toList()
-                                },
+                                ),
                                 ""
+//                                org.openapitools.client.models.RespeckData().apply {
+//                                    respeckData = respeckDataQueue.map { d ->
+//                                        listOf(d.accel_x, d.accel_y, d.accel_z).map { it.toBigDecimal() }
+//                                    }.toList()
+//                                },
                             ).also { pred ->
-//                                Log.d(TAG, "prediction response => ${pred}")
-                                val conf = String.format("%.2f%%", 100 * pred.predictions[pred.label].toFloat())
+                                Log.d(TAG, "prediction response => $pred")
+                                //      pred.predictions[pred.label].toFloat()
+                                val p = pred.label?.let { pred.predictions?.get(it) } ?: 0
+                                val conf = String.format("%.2f%%", 100 * p.toFloat())
                                 Log.d(TAG, "prediction response => activity   = ${pred.activity}")
                                 Log.d(TAG, "                       confidence = ${conf}")
                                 runOnUiThread {
@@ -264,13 +281,10 @@ class LiveDataFragment : Fragment() {
                                     networkModelPredictionConfidence.text = conf
                                 }
                             }
-                        }
-//                        catch (e: ApiException) {
-////                            Log.e(TAG, "Failed to send data to API: $e\nRetrying...")
-////                            print(e)
-////                            Snackbar.make()
-//                        }
-                        catch (e: Exception) {
+                        } catch (e: Exception) {
+//                            when (e) {
+//                                is ClientException ->
+//                            }
                             // probably disconnected
                             Log.e(TAG, "Failed to send data to API: $e\nRetrying...")
                             connectToApi()
@@ -514,9 +528,7 @@ class LiveDataFragment : Fragment() {
 
     private fun connectToApi() {
         try {
-            flaskApi = DefaultApi().apply {
-                basePath = API_BASE_PATH
-            }
+            flaskApi = DefaultApi(API_BASE_PATH)
         } catch (e: Exception) {
             Log.e(TAG, "Failed connection to API: $e")
         }

@@ -10,30 +10,31 @@ Method | HTTP request | Description
 [**postRespeckData**](DefaultApi.md#postRespeckData) | **POST** /respeck/{respeck_mac} | 
 
 
-
-## getFullData
-
+<a name="getFullData"></a>
+# **getFullData**
 > getFullData()
 
 
 
 ### Example
-
-```java
+```kotlin
 // Import classes:
-//import org.openapitools.client.api.DefaultApi;
+//import org.openapitools.client.infrastructure.*
+//import org.openapitools.client.models.*
 
-DefaultApi apiInstance = new DefaultApi();
+val apiInstance = DefaultApi()
 try {
-    apiInstance.getFullData();
-} catch (ApiException e) {
-    System.err.println("Exception when calling DefaultApi#getFullData");
-    e.printStackTrace();
+    apiInstance.getFullData()
+} catch (e: ClientException) {
+    println("4xx response calling DefaultApi#getFullData")
+    e.printStackTrace()
+} catch (e: ServerException) {
+    println("5xx response calling DefaultApi#getFullData")
+    e.printStackTrace()
 }
 ```
 
 ### Parameters
-
 This endpoint does not need any parameter.
 
 ### Return type
@@ -46,41 +47,42 @@ No authorization required
 
 ### HTTP request headers
 
-- **Content-Type**: Not defined
-- **Accept**: Not defined
+ - **Content-Type**: Not defined
+ - **Accept**: Not defined
 
-
-## getRespeckData
-
+<a name="getRespeckData"></a>
+# **getRespeckData**
 > RespeckData getRespeckData(respeckMac, xFields)
 
 
 
 ### Example
-
-```java
+```kotlin
 // Import classes:
-//import org.openapitools.client.api.DefaultApi;
+//import org.openapitools.client.infrastructure.*
+//import org.openapitools.client.models.*
 
-DefaultApi apiInstance = new DefaultApi();
-String respeckMac = null; // String | 
-String xFields = null; // String | An optional fields mask
+val apiInstance = DefaultApi()
+val respeckMac : kotlin.String = respeckMac_example // kotlin.String | 
+val xFields : kotlin.String = xFields_example // kotlin.String | An optional fields mask
 try {
-    RespeckData result = apiInstance.getRespeckData(respeckMac, xFields);
-    System.out.println(result);
-} catch (ApiException e) {
-    System.err.println("Exception when calling DefaultApi#getRespeckData");
-    e.printStackTrace();
+    val result : RespeckData = apiInstance.getRespeckData(respeckMac, xFields)
+    println(result)
+} catch (e: ClientException) {
+    println("4xx response calling DefaultApi#getRespeckData")
+    e.printStackTrace()
+} catch (e: ServerException) {
+    println("5xx response calling DefaultApi#getRespeckData")
+    e.printStackTrace()
 }
 ```
 
 ### Parameters
 
-
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **respeckMac** | **String**|  | [default to null]
- **xFields** | **String**| An optional fields mask | [optional] [default to null]
+ **respeckMac** | **kotlin.String**|  |
+ **xFields** | **kotlin.String**| An optional fields mask | [optional]
 
 ### Return type
 
@@ -92,43 +94,44 @@ No authorization required
 
 ### HTTP request headers
 
-- **Content-Type**: Not defined
-- **Accept**: application/json
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
 
-
-## getRespeckStreamedData
-
-> List&lt;BigDecimal&gt; getRespeckStreamedData(respeckMac)
+<a name="getRespeckStreamedData"></a>
+# **getRespeckStreamedData**
+> kotlin.collections.List&lt;java.math.BigDecimal&gt; getRespeckStreamedData(respeckMac)
 
 
 
 ### Example
-
-```java
+```kotlin
 // Import classes:
-//import org.openapitools.client.api.DefaultApi;
+//import org.openapitools.client.infrastructure.*
+//import org.openapitools.client.models.*
 
-DefaultApi apiInstance = new DefaultApi();
-String respeckMac = null; // String | 
+val apiInstance = DefaultApi()
+val respeckMac : kotlin.String = respeckMac_example // kotlin.String | 
 try {
-    List<BigDecimal> result = apiInstance.getRespeckStreamedData(respeckMac);
-    System.out.println(result);
-} catch (ApiException e) {
-    System.err.println("Exception when calling DefaultApi#getRespeckStreamedData");
-    e.printStackTrace();
+    val result : kotlin.collections.List<java.math.BigDecimal> = apiInstance.getRespeckStreamedData(respeckMac)
+    println(result)
+} catch (e: ClientException) {
+    println("4xx response calling DefaultApi#getRespeckStreamedData")
+    e.printStackTrace()
+} catch (e: ServerException) {
+    println("5xx response calling DefaultApi#getRespeckStreamedData")
+    e.printStackTrace()
 }
 ```
 
 ### Parameters
 
-
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **respeckMac** | **String**|  | [default to null]
+ **respeckMac** | **kotlin.String**|  |
 
 ### Return type
 
-[**List&lt;BigDecimal&gt;**](BigDecimal.md)
+[**kotlin.collections.List&lt;java.math.BigDecimal&gt;**](java.math.BigDecimal.md)
 
 ### Authorization
 
@@ -136,43 +139,44 @@ No authorization required
 
 ### HTTP request headers
 
-- **Content-Type**: Not defined
-- **Accept**: application/json
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
 
-
-## postRespeckData
-
+<a name="postRespeckData"></a>
+# **postRespeckData**
 > RespeckPrediction postRespeckData(respeckMac, payload, xFields)
 
 
 
 ### Example
-
-```java
+```kotlin
 // Import classes:
-//import org.openapitools.client.api.DefaultApi;
+//import org.openapitools.client.infrastructure.*
+//import org.openapitools.client.models.*
 
-DefaultApi apiInstance = new DefaultApi();
-String respeckMac = null; // String | 
-RespeckData payload = new RespeckData(); // RespeckData | 
-String xFields = null; // String | An optional fields mask
+val apiInstance = DefaultApi()
+val respeckMac : kotlin.String = respeckMac_example // kotlin.String | 
+val payload : RespeckData =  // RespeckData | 
+val xFields : kotlin.String = xFields_example // kotlin.String | An optional fields mask
 try {
-    RespeckPrediction result = apiInstance.postRespeckData(respeckMac, payload, xFields);
-    System.out.println(result);
-} catch (ApiException e) {
-    System.err.println("Exception when calling DefaultApi#postRespeckData");
-    e.printStackTrace();
+    val result : RespeckPrediction = apiInstance.postRespeckData(respeckMac, payload, xFields)
+    println(result)
+} catch (e: ClientException) {
+    println("4xx response calling DefaultApi#postRespeckData")
+    e.printStackTrace()
+} catch (e: ServerException) {
+    println("5xx response calling DefaultApi#postRespeckData")
+    e.printStackTrace()
 }
 ```
 
 ### Parameters
 
-
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **respeckMac** | **String**|  | [default to null]
+ **respeckMac** | **kotlin.String**|  |
  **payload** | [**RespeckData**](RespeckData.md)|  |
- **xFields** | **String**| An optional fields mask | [optional] [default to null]
+ **xFields** | **kotlin.String**| An optional fields mask | [optional]
 
 ### Return type
 
@@ -184,6 +188,6 @@ No authorization required
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
-- **Accept**: application/json
+ - **Content-Type**: application/json
+ - **Accept**: application/json
 

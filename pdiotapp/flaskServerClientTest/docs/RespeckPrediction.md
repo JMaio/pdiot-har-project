@@ -1,15 +1,12 @@
 
-
 # RespeckPrediction
 
 ## Properties
-
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**predictions** | [**List&lt;BigDecimal&gt;**](BigDecimal.md) |  |  [optional]
-**label** | **Integer** |  |  [optional]
-**activity** | **String** |  |  [optional]
-
+**predictions** | [**kotlin.collections.List&lt;java.math.BigDecimal&gt;**](java.math.BigDecimal.md) |  |  [optional]
+**label** | **kotlin.Int** |  |  [optional]
+**activity** | **kotlin.String** |  |  [optional]
 
 
 

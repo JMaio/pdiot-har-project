@@ -1,13 +1,10 @@
 
-
 # RespeckData
 
 ## Properties
-
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**respeckData** | [**List&lt;List&lt;BigDecimal&gt;&gt;**](List.md) |  |  [optional]
-
+**respeckData** | **kotlin.collections.List&lt;kotlin.collections.List&lt;java.math.BigDecimal&gt;&gt;** |  |  [optional]
 
 
 
