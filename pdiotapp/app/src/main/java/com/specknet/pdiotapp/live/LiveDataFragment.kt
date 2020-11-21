@@ -17,6 +17,7 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.github.mikephil.charting.charts.LineChart
@@ -28,6 +29,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.common.collect.EvictingQueue
 import com.specknet.pdiotapp.R
 import com.specknet.pdiotapp.utils.*
+import kotlinx.coroutines.launch
 import org.openapitools.client.ApiException
 import org.openapitools.client.api.DefaultApi
 import java.util.concurrent.BlockingQueue
@@ -139,10 +141,10 @@ class LiveDataFragment : Fragment() {
         val view: View = inflater.inflate(R.layout.activity_live_data, container, false)
 
         // get the accel fields
-        val accelX = view.findViewById<TextView>(R.id.accel_x)
-        val accelY = view.findViewById<TextView>(R.id.accel_y)
-        val accelZ = view.findViewById<TextView>(R.id.accel_z)
-        val magTextView = view.findViewById<TextView>(R.id.magTextView)
+//        val accelX = view.findViewById<TextView>(R.id.accel_x)
+//        val accelY = view.findViewById<TextView>(R.id.accel_y)
+//        val accelZ = view.findViewById<TextView>(R.id.accel_z)
+//        val magTextView = view.findViewById<TextView>(R.id.magTextView)
 
 //        modelSelector = view.findViewById(R.id.modelSelectionSpinner)
 //        modelSelector.apply {
@@ -234,10 +236,15 @@ class LiveDataFragment : Fragment() {
 
                     val interval = 25;
 
+                    time += 1
+                    updateGraph()
+
                     if (time % interval == 0) {
                         // only update every 5 data points
                         classifyActivity(respeckDataQueue.toList())
-
+                        // coroutine, runs asynchronously
+                        // https://kotlinlang.org/docs/tutorials/coroutines/coroutines-basic-jvm.html
+                        // https://developer.android.com/kotlin/coroutines
                         try {
                             flaskApi.postRespeckData(
                                 respeckUUID.replace(':', '-'),
@@ -257,13 +264,18 @@ class LiveDataFragment : Fragment() {
                                     networkModelPredictionConfidence.text = conf
                                 }
                             }
-                        } catch (e: ApiException) {
-                            print(e)
-//                            Snackbar.make()
-                        } catch (e: Exception) {
+                        }
+//                        catch (e: ApiException) {
+////                            Log.e(TAG, "Failed to send data to API: $e\nRetrying...")
+////                            print(e)
+////                            Snackbar.make()
+//                        }
+                        catch (e: Exception) {
                             // probably disconnected
+                            Log.e(TAG, "Failed to send data to API: $e\nRetrying...")
                             connectToApi()
                         }
+                    }
 
 //                        runOnUiThread {
 //                            accelX.text = getString(R.string.s_eq_4f, getString(R.string.accel_x), x)
@@ -271,10 +283,6 @@ class LiveDataFragment : Fragment() {
 //                            accelZ.text = getString(R.string.s_eq_4f, getString(R.string.accel_z), z)
 //                            magTextView.text = getString(R.string.s_eq_4f, getString(R.string.accel_mag), mag)
 //                        }
-                    }
-
-                    time += 1
-                    updateGraph()
                 }
             }
         }
@@ -505,8 +513,12 @@ class LiveDataFragment : Fragment() {
     }
 
     private fun connectToApi() {
-        flaskApi = DefaultApi().apply {
-            basePath = API_BASE_PATH
+        try {
+            flaskApi = DefaultApi().apply {
+                basePath = API_BASE_PATH
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed connection to API: $e")
         }
     }
 }

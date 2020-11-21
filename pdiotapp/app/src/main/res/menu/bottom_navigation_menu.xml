@@ -3,12 +3,12 @@
 
     <item
         android:id="@+id/navigation_live"
-        android:icon="@drawable/ic_baseline_insights_24"
+        android:icon="@drawable/ic_baseline_directions_run_24"
         android:title="@string/live" />
     <item
-        android:id="@+id/navigation_record"
-        android:icon="@drawable/ic_baseline_timer_24"
-        android:title="@string/record" />
+        android:id="@+id/navigation_timeline"
+        android:icon="@drawable/ic_baseline_insights_24"
+        android:title="@string/timeline" />
     <item
         android:id="@+id/navigation_connect"
         android:icon="@drawable/ic_baseline_bluetooth_24"
