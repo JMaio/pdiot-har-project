@@ -20,6 +20,7 @@ import android.widget.Spinner
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.github.mikephil.charting.charts.LineChart
@@ -31,6 +32,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.common.collect.EvictingQueue
 import com.specknet.pdiotapp.R
 import com.specknet.pdiotapp.utils.*
+import kotlinx.coroutines.launch
 import org.openapitools.client.apis.DefaultApi
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.DelayQueue
@@ -248,46 +250,48 @@ class LiveDataFragment : Fragment() {
                     if (time % interval == 0) {
                         // only update every 5 data points
                         classifyActivity(respeckDataQueue.toList())
-                        try {
-                            // coroutine, runs asynchronously
-                            // https://kotlinlang.org/docs/tutorials/coroutines/coroutines-basic-jvm.html
-                            // https://developer.android.com/kotlin/coroutines
-                            flaskApi.postRespeckData(
-                                respeckUUID.replace(':', '-'),
-                                org.openapitools.client.models.RespeckData(
-                                    respeckDataQueue.map { d ->
-                                        listOf(
-                                            d.accel_x,
-                                            d.accel_y,
-                                            d.accel_z
-                                        ).map { it.toBigDecimal() }
-                                    }.toList()
-                                ),
-                                ""
+                        // coroutine, runs asynchronously
+                        // https://kotlinlang.org/docs/tutorials/coroutines/coroutines-basic-jvm.html
+                        // https://developer.android.com/kotlin/coroutines
+                        lifecycleScope.launch {
+                            try {
+                                flaskApi.postRespeckData(
+                                    respeckUUID.replace(':', '-'),
+                                    org.openapitools.client.models.RespeckData(
+                                        respeckDataQueue.map { d ->
+                                            listOf(
+                                                d.accel_x,
+                                                d.accel_y,
+                                                d.accel_z
+                                            ).map { it.toBigDecimal() }
+                                        }.toList()
+                                    ),
+                                    ""
 //                                org.openapitools.client.models.RespeckData().apply {
 //                                    respeckData = respeckDataQueue.map { d ->
 //                                        listOf(d.accel_x, d.accel_y, d.accel_z).map { it.toBigDecimal() }
 //                                    }.toList()
 //                                },
-                            ).also { pred ->
-                                Log.d(TAG, "prediction response => $pred")
-                                //      pred.predictions[pred.label].toFloat()
-                                val p = pred.label?.let { pred.predictions?.get(it) } ?: 0
-                                val conf = String.format("%.2f%%", 100 * p.toFloat())
-                                Log.d(TAG, "prediction response => activity   = ${pred.activity}")
-                                Log.d(TAG, "                       confidence = ${conf}")
-                                runOnUiThread {
-                                    networkModelPredictionActivityText.text = pred.activity
-                                    networkModelPredictionConfidence.text = conf
+                                ).also { pred ->
+                                    Log.d(TAG, "prediction response => $pred")
+                                    //      pred.predictions[pred.label].toFloat()
+                                    val p = pred.label?.let { pred.predictions?.get(it) } ?: 0
+                                    val conf = String.format("%.2f%%", 100 * p.toFloat())
+                                    Log.d(TAG, "prediction response => activity   = ${pred.activity}")
+                                    Log.d(TAG, "                       confidence = ${conf}")
+                                    runOnUiThread {
+                                        networkModelPredictionActivityText.text = pred.activity
+                                        networkModelPredictionConfidence.text = conf
+                                    }
                                 }
-                            }
-                        } catch (e: Exception) {
+                            } catch (e: Exception) {
 //                            when (e) {
 //                                is ClientException ->
 //                            }
-                            // probably disconnected
-                            Log.e(TAG, "Failed to send data to API: $e\nRetrying...")
-                            connectToApi()
+                                // probably disconnected
+                                Log.e(TAG, "Failed to send data to API: $e\nRetrying...")
+                                connectToApi()
+                            }
                         }
                     }
 
