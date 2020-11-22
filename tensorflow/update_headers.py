@@ -6,6 +6,7 @@ folder = input("Enter folder: ")
 
 for file in os.listdir("./" + folder):
     filepath = os.path.join(folder, file)
+   
     lines = []
     with open(filepath, newline='') as csvfile:
         reader = csv.reader(csvfile)
