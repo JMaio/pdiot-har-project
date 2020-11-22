@@ -35,10 +35,10 @@ All URIs are relative to *http://localhost/api/v1*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
-*DefaultApi* | [**getFullData**](docs/DefaultApi.md#getfulldata) | **GET** /data | 
-*DefaultApi* | [**getRespeckData**](docs/DefaultApi.md#getrespeckdata) | **GET** /respeck/{respeck_mac} | 
-*DefaultApi* | [**getRespeckStreamedData**](docs/DefaultApi.md#getrespeckstreameddata) | **GET** /respeck/stream/{respeck_mac} | 
-*DefaultApi* | [**postRespeckData**](docs/DefaultApi.md#postrespeckdata) | **POST** /respeck/{respeck_mac} | 
+*DefaultApi* | [**getFullData**](docs/DefaultApi.md#getfulldata) | **GET** data | 
+*DefaultApi* | [**getRespeckData**](docs/DefaultApi.md#getrespeckdata) | **GET** respeck/{respeck_mac} | 
+*DefaultApi* | [**getRespeckStreamedData**](docs/DefaultApi.md#getrespeckstreameddata) | **GET** respeck/stream/{respeck_mac} | 
+*DefaultApi* | [**postRespeckData**](docs/DefaultApi.md#postrespeckdata) | **POST** respeck/{respeck_mac} | 
 
 
 <a name="documentation-for-models"></a>

@@ -115,7 +115,7 @@ class RespeckData(Resource):
 
         npdata = np.array(d, dtype=np.float32).reshape((-1, 3))
         print(npdata.shape)
-        p, l, a = interpreter.make_prediction_on_data(npdata, fft=True)
+        p, l, a = interpreter.make_prediction_on_data(npdata, fft=True, grouped=True)
 
         res = {
             # 'mac': respeck_mac,
