@@ -20,7 +20,6 @@ import android.widget.Spinner
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.github.mikephil.charting.charts.LineChart
@@ -32,8 +31,11 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.common.collect.EvictingQueue
 import com.specknet.pdiotapp.R
 import com.specknet.pdiotapp.utils.*
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.openapitools.client.apis.DefaultApi
+import org.openapitools.client.infrastructure.ApiClient
+import retrofit2.await
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.DelayQueue
 import kotlin.math.roundToInt
@@ -253,31 +255,36 @@ class LiveDataFragment : Fragment() {
                         // coroutine, runs asynchronously
                         // https://kotlinlang.org/docs/tutorials/coroutines/coroutines-basic-jvm.html
                         // https://developer.android.com/kotlin/coroutines
-                        lifecycleScope.launch {
+                        val requestData = respeckDataQueue.map { d ->
+                            listOf(
+                                d.accel_x,
+                                d.accel_y,
+                                d.accel_z
+                            ).map { it.toBigDecimal() }
+                        }.toList()
+
+                        GlobalScope.launch {
                             try {
                                 flaskApi.postRespeckData(
                                     respeckUUID.replace(':', '-'),
-                                    org.openapitools.client.models.RespeckData(
-                                        respeckDataQueue.map { d ->
-                                            listOf(
-                                                d.accel_x,
-                                                d.accel_y,
-                                                d.accel_z
-                                            ).map { it.toBigDecimal() }
-                                        }.toList()
-                                    ),
+                                    org.openapitools.client.models.RespeckData(requestData),
                                     ""
 //                                org.openapitools.client.models.RespeckData().apply {
 //                                    respeckData = respeckDataQueue.map { d ->
 //                                        listOf(d.accel_x, d.accel_y, d.accel_z).map { it.toBigDecimal() }
 //                                    }.toList()
 //                                },
-                                ).also { pred ->
+                                ).await().let { pred ->
                                     Log.d(TAG, "prediction response => $pred")
                                     //      pred.predictions[pred.label].toFloat()
-                                    val p = pred.label?.let { pred.predictions?.get(it) } ?: 0
-                                    val conf = String.format("%.2f%%", 100 * p.toFloat())
-                                    Log.d(TAG, "prediction response => activity   = ${pred.activity}")
+                                    val p: Float = pred.label?.let { pred.predictions?.get(it) }
+                                        ?.toFloat()
+                                        ?: 0f
+                                    val conf = String.format("%.2f%%", 100 * p)
+                                    Log.d(
+                                        TAG,
+                                        "prediction response => activity   = ${pred.activity}"
+                                    )
                                     Log.d(TAG, "                       confidence = ${conf}")
                                     runOnUiThread {
                                         networkModelPredictionActivityText.text = pred.activity
@@ -294,13 +301,6 @@ class LiveDataFragment : Fragment() {
                             }
                         }
                     }
-
-//                        runOnUiThread {
-//                            accelX.text = getString(R.string.s_eq_4f, getString(R.string.accel_x), x)
-//                            accelY.text = getString(R.string.s_eq_4f, getString(R.string.accel_y), y)
-//                            accelZ.text = getString(R.string.s_eq_4f, getString(R.string.accel_z), z)
-//                            magTextView.text = getString(R.string.s_eq_4f, getString(R.string.accel_mag), mag)
-//                        }
                 }
             }
         }
@@ -532,7 +532,9 @@ class LiveDataFragment : Fragment() {
 
     private fun connectToApi() {
         try {
-            flaskApi = DefaultApi(API_BASE_PATH)
+            Log.i(TAG, "Connecting to API at $API_BASE_PATH ...")
+            flaskApi = ApiClient(API_BASE_PATH).createService(DefaultApi::class.java)
+            Log.i(TAG, "Connected to API! ($flaskApi)")
         } catch (e: Exception) {
             Log.e(TAG, "Failed connection to API: $e")
         }
