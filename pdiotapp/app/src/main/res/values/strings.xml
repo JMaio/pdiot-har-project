@@ -60,4 +60,13 @@
     <string name="timeline">Timeline</string>
     <string name="activities">Activities</string>
     <string name="categories">Categories</string>
+    <string name="low_activity">Low activity</string>
+    <string name="medium_activity">Medium activity</string>
+    <string name="high_activity">High activity</string>
+    <string name="today">Today</string>
+    <string name="activity_level">Activity level</string>
+    <string name="moderate">Moderate</string>
+    <string name="activity_level_today">Activity level today</string>
+    <string name="time_spent_per_category">Time spent per category</string>
+    <string name="low">Low</string>
 </resources>

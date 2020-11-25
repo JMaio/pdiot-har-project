@@ -1,0 +1,95 @@
+<!-- this WILL be the Activity Indicator -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <!--    <com.specknet.pdiotapp.ActivityIndicator-->
+    <!--        android:id="@+id/activityIndicator"-->
+    <!--        style="@style/Widget.PDIoTAppTheme.MyView"-->
+    <!--        android:layout_width="300dp"-->
+    <!--        android:layout_height="300dp"-->
+    <!--        android:paddingLeft="20dp"-->
+    <!--        android:paddingBottom="40dp"-->
+    <!--        app:exampleDimension="24sp"-->
+    <!--        app:exampleDrawable="@android:drawable/ic_menu_add"-->
+    <!--        app:exampleString="Hello, ActivityIndicator"-->
+    <!--        app:layout_constraintStart_toStartOf="parent"-->
+    <!--        app:layout_constraintTop_toTopOf="parent" />-->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:contentDescription="@string/low_activity"
+            app:srcCompat="@drawable/ic_baseline_airline_seat_recline_normal_24" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0"
+            app:srcCompat="@drawable/ic_baseline_chevron_right_24" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:contentDescription="@string/medium_activity"
+            app:srcCompat="@drawable/ic_baseline_accessibility_new_24" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0"
+            app:srcCompat="@drawable/ic_baseline_chevron_right_24" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:contentDescription="@string/high_activity"
+            app:srcCompat="@drawable/ic_baseline_directions_run_24" />
+
+    </LinearLayout>
+
+    <SeekBar
+        android:id="@+id/activityLevelProgressIndicator"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginLeft="32dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginRight="32dp"
+        android:layout_marginBottom="4dp"
+        android:layout_weight="1"
+        android:indeterminate="false"
+        android:progress="23"
+        android:thumb="@drawable/ic_baseline_offline_bolt_24"
+        android:thumbTint="@color/colorAccent" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/activity_level_today"
+        android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+
+    <TextView
+        android:id="@+id/activityLevelTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:fontFamily="sans-serif-light"
+        android:text="@string/low"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        android:textStyle="italic" />
+
+
+</LinearLayout>

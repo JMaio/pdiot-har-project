@@ -143,28 +143,11 @@ class LiveDataFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         super.onCreateView(inflater, container, savedInstanceState)
 
         val view: View = inflater.inflate(R.layout.activity_live_data, container, false)
 
-        // get the accel fields
-//        val accelX = view.findViewById<TextView>(R.id.accel_x)
-//        val accelY = view.findViewById<TextView>(R.id.accel_y)
-//        val accelZ = view.findViewById<TextView>(R.id.accel_z)
-//        val magTextView = view.findViewById<TextView>(R.id.magTextView)
-
-//        modelSelector = view.findViewById(R.id.modelSelectionSpinner)
-//        modelSelector.apply {
-//            adapter = modelChoiceAdapter
-//            onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-//                override fun onItemSelected(
-//                    parent: AdapterView<*>?,
-//                    view: View?,
-//                    position: Int,
-//                    id: Long
-//                ) {
-//                    val name = adapter.getItem(position) as String
         val name = "cnn_model_4ChestRight.tflite"
         activityClassifier
             .initialize(name)
@@ -186,12 +169,6 @@ class LiveDataFragment : Fragment() {
             .addOnFailureListener { e ->
                 Log.e(TAG, "Error setting up activity classifier.", e)
             }
-//                }
-//
-//                override fun onNothingSelected(parent: AdapterView<*>?) {}
-//            }
-//        }
-
 
         modelPredictionActivityText = view.findViewById(R.id.modelPredictionActivityText)
         modelPredictionConfidence = view.findViewById(R.id.modelPredictionConfidence)
@@ -202,7 +179,6 @@ class LiveDataFragment : Fragment() {
 
         connectToApi()
 
-//        Log.i(TAG, "assets: ${assets.list("")?.map { s -> s }}")
 
         // https://stackoverflow.com/q/60430697/9184658
 
