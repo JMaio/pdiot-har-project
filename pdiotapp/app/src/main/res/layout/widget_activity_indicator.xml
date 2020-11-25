@@ -27,6 +27,7 @@
         android:orientation="horizontal">
 
         <ImageView
+            android:id="@+id/activityIndicatorIconSitting"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -40,6 +41,7 @@
             app:srcCompat="@drawable/ic_baseline_chevron_right_24" />
 
         <ImageView
+            android:id="@+id/activityIndicatorIconStanding"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -53,6 +55,7 @@
             app:srcCompat="@drawable/ic_baseline_chevron_right_24" />
 
         <ImageView
+            android:id="@+id/activityIndicatorIconRunning"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_weight="1"
