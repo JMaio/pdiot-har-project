@@ -16,7 +16,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.ProgressBar
-import android.widget.Spinner
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -31,6 +30,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.common.collect.EvictingQueue
 import com.specknet.pdiotapp.R
 import com.specknet.pdiotapp.utils.*
+import kotlinx.android.synthetic.main.activity_live_data.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.openapitools.client.apis.DefaultApi
@@ -46,6 +46,8 @@ class LiveDataFragment : Fragment() {
     companion object {
         const val API_BASE_PATH = "http://192.168.1.105:5000/api/v1"
         private const val TAG = "LiveDataActivity"
+        const val floatFormat = "%.1f%%"
+        val defaultModelName = "cnn_model_4ChestRight.tflite"
     }
 
     override fun setRetainInstance(retain: Boolean) {
@@ -75,7 +77,7 @@ class LiveDataFragment : Fragment() {
 
     val filterTest = IntentFilter(Constants.ACTION_INNER_RESPECK_BROADCAST)
 
-    private lateinit var modelSelector: Spinner
+//    private lateinit var modelSelector: Spinner
     private lateinit var modelPredictionActivityText: TextView
     private lateinit var modelPredictionConfidence: TextView
     private lateinit var networkModelPredictionActivityText: TextView
@@ -88,9 +90,9 @@ class LiveDataFragment : Fragment() {
     private lateinit var recyclerViewManager: RecyclerView.LayoutManager
 
     // for movement categories
-    private lateinit var recyclerViewCategory: RecyclerView
-    private lateinit var recyclerViewCategoryAdapter: RecyclerView.Adapter<*>
-    private lateinit var recyclerViewCategoryManager: RecyclerView.LayoutManager
+//    private lateinit var recyclerViewCategory: RecyclerView
+//    private lateinit var recyclerViewCategoryAdapter: RecyclerView.Adapter<*>
+//    private lateinit var recyclerViewCategoryManager: RecyclerView.LayoutManager
 
     private lateinit var flaskApi: DefaultApi
     private lateinit var respeckUUID: String
@@ -100,13 +102,8 @@ class LiveDataFragment : Fragment() {
     private var respeckDataQueue: EvictingQueue<RespeckData> = EvictingQueue.create(0)
 
     private var dummyClassificationResults = ClassificationResults(
-        (0 until ActivityClassifier.OUTPUT_CLASSES_COUNT).mapIndexed { _, i ->
-            ClassificationResult(
-                Constants.ACTIVITY_CATEGORIES[i],
-//                Constants.ACTIVITY_CODE_TO_NAME_MAPPING
-//                    .getOrDefault(Constants.TFCODE_TO_ACTIVITY_CODE[i], "Unknown"),
-                0f
-            )
+        Constants.ACTIVITY_CATEGORIES.map { c ->
+            ClassificationResult(c, 0f)
         }
     )
 
@@ -148,19 +145,18 @@ class LiveDataFragment : Fragment() {
 
         val view: View = inflater.inflate(R.layout.activity_live_data, container, false)
 
-        val name = "cnn_model_4ChestRight.tflite"
         activityClassifier
-            .initialize(name)
+            .initialize(defaultModelName)
             .addOnSuccessListener {
                 val w = activityClassifier.windowSize
                 respeckDataQueue = EvictingQueue.create(w)
                 // fill with zero packets
                 respeckDataQueue.addAll((1..w).map { zeroRespeckData })
-                Log.i(TAG, "Set up activity classifier '$name'")
+                Log.i(TAG, "Set up activity classifier '$defaultModelName'")
                 // https://stackoverflow.com/a/58665768/9184658
                 Snackbar.make(
                     modelPredictionActivityText,
-                    "Selected model '$name' (ws=${w})",
+                    "Selected model '$defaultModelName' (ws=${w})",
                     Snackbar.LENGTH_SHORT
                 ).apply {
                     setAnchorView(R.id.bottom_nav_fab)
@@ -253,18 +249,15 @@ class LiveDataFragment : Fragment() {
                                 ).await().let { pred ->
                                     Log.d(TAG, "prediction response => $pred")
                                     //      pred.predictions[pred.label].toFloat()
-                                    val p: Float = pred.label?.let { pred.predictions?.get(it) }
-                                        ?.toFloat()
-                                        ?: 0f
-                                    val conf = String.format("%.2f%%", 100 * p)
-                                    Log.d(
-                                        TAG,
-                                        "prediction response => activity   = ${pred.activity}"
-                                    )
+                                    val p = pred.label?.let { pred.predictions?.get(it) } ?: 0
+                                    val conf = String.format(floatFormat, 100 * p.toFloat())
+                                    Log.d(TAG, "prediction response => activity   = ${pred.activity}")
                                     Log.d(TAG, "                       confidence = ${conf}")
                                     runOnUiThread {
-                                        networkModelPredictionActivityText.text = pred.activity
-                                        networkModelPredictionConfidence.text = conf
+                                        predictionTextIndicatorNetwork.apply {
+                                            setActivity(pred.activity)
+                                            setConfidence(conf)
+                                        }
                                     }
                                 }
                             } catch (e: Exception) {
@@ -289,6 +282,15 @@ class LiveDataFragment : Fragment() {
         ctx.registerReceiver(respeckLiveUpdateReceiver, filterTest, null, handler)
 //        return super.onCreateView(inflater, container, savedInstanceState)
         return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        predictionTextIndicatorOnDevice
+        predictionTextIndicatorNetwork.apply {
+            setIcon(R.drawable.ic_baseline_wifi_24)
+            setDescription(R.string.network_prediction)
+        }
     }
 
     override fun onDestroy() {
@@ -397,16 +399,16 @@ class LiveDataFragment : Fragment() {
         }
 
         // category view, almost equivalent to other recycler view
-        recyclerViewCategoryManager = object : LinearLayoutManager(view.context) {
-            override fun canScrollVertically(): Boolean = false
-        }
-        recyclerViewAdapter = ActivityRecyclerAdapter(ClassificationResults(emptyList()))
-        recyclerViewCategory =
-            view.findViewById<RecyclerView>(R.id.activityCategoriesRecyclerView).apply {
-                setHasFixedSize(true)
-                layoutManager = recyclerViewCategoryManager
-                adapter = recyclerViewAdapter
-            }
+//        recyclerViewCategoryManager = object : LinearLayoutManager(view.context) {
+//            override fun canScrollVertically(): Boolean = false
+//        }
+//        recyclerViewAdapter = ActivityRecyclerAdapter(ClassificationResults(emptyList()))
+//        recyclerViewCategory =
+//            view.findViewById<RecyclerView>(R.id.activityCategoriesRecyclerView).apply {
+//                setHasFixedSize(true)
+//                layoutManager = recyclerViewCategoryManager
+//                adapter = recyclerViewAdapter
+//            }
     }
 
     //
@@ -491,9 +493,13 @@ class LiveDataFragment : Fragment() {
 //                    )
 //                    recyclerViewCategory.adapter = ActivityRecyclerAdapter(categorizedResults)
 
-                    res.max.let { (name, c) ->
-                        modelPredictionActivityText.text = name
-                        modelPredictionConfidence.text = String.format("%.2f%%", 100 * c)
+                    res.max.let { (activity, c) ->
+                        predictionTextIndicatorOnDevice.apply {
+                            setActivity(activity)
+                            setConfidence(String.format(floatFormat, 100 * c))
+                        }
+//                        modelPredictionActivityText.text = name
+//                        modelPredictionConfidence.text = String.format("%.2f%%", 100 * c)
                     }
                 }
                 .addOnFailureListener { e ->

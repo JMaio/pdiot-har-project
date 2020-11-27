@@ -73,8 +73,7 @@
         android:layout_marginRight="32dp"
         android:layout_marginBottom="4dp"
         android:layout_weight="1"
-        android:indeterminate="false"
-        android:progress="23"
+        android:max="1000"
         android:thumb="@drawable/ic_baseline_offline_bolt_24"
         android:thumbTint="@color/colorAccent" />
 
@@ -85,7 +84,7 @@
         android:textAppearance="@style/TextAppearance.AppCompat.Small" />
 
     <TextView
-        android:id="@+id/activityLevelTextView"
+        android:id="@+id/activityIndicatorTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"

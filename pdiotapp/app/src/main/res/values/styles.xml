@@ -22,7 +22,7 @@
         <item name="exampleColor">@color/light_blue_400</item>
     </style>
 
-    <style name="TextAppearance.AppCompat.Small" >
+    <style name="TextAppearance.AppCompat.Small">
         <item name="fontFamily">sans-serif-light</item>
     </style>
     <!--  https://stackoverflow.com/a/53927172/9184658  -->

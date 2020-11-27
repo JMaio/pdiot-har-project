@@ -1,15 +1,19 @@
 package com.specknet.pdiotapp
 
+import android.animation.ObjectAnimator
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
 import android.util.AttributeSet
+import android.view.animation.DecelerateInterpolator
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.SeekBar
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import kotlinx.android.synthetic.main.widget_activity_indicator.view.*
+
 
 private const val CHANNEL_ID = "PDIoT.ActivityNotificationChannel"
 private const val TAG = "ActivityNotification"
@@ -25,6 +29,9 @@ class ActivityIndicator @JvmOverloads constructor(
     private val activityIndicatorIconSitting: ImageView
     private val activityIndicatorIconStanding: ImageView
     private val activityIndicatorIconRunning: ImageView
+
+    //    private val activityIndicatorText: TextView
+    var currentProgress: Int = 0; private set
 
     init {
         inflate(context, R.layout.widget_activity_indicator, this)
@@ -45,6 +52,8 @@ class ActivityIndicator @JvmOverloads constructor(
         activityIndicatorIconStanding = findViewById(R.id.activityIndicatorIconStanding)
         activityIndicatorIconRunning = findViewById(R.id.activityIndicatorIconRunning)
 
+//        activityIndicatorText = findViewById(R.id.activityIndicatorTextView)
+
         createNotificationChannel()
         setClickListeners()
     }
@@ -62,6 +71,7 @@ class ActivityIndicator @JvmOverloads constructor(
                     // notificationId is a unique int for each notification that you must define
                     notify(0, n.build())
                 }
+                setProgress(20)
                 performClick()
                 true
             }
@@ -77,6 +87,7 @@ class ActivityIndicator @JvmOverloads constructor(
                     // notificationId is a unique int for each notification that you must define
                     notify(0, n.build())
                 }
+                setProgress(50)
                 performClick()
                 true
             }
@@ -92,6 +103,7 @@ class ActivityIndicator @JvmOverloads constructor(
                     // notificationId is a unique int for each notification that you must define
                     notify(0, n.build())
                 }
+                setProgress(80)
                 performClick()
                 true
             }
@@ -114,6 +126,32 @@ class ActivityIndicator @JvmOverloads constructor(
             notificationManager.createNotificationChannel(channel)
         }
     }
+
+    fun setProgress(n: Number) {
+        // convert to int for progress bar
+        val p: Int = if (n in 0..100) n as Int else -1
+        var t = "?"
+        when (p) {
+            in 0..33 -> t = resources.getString(R.string.low)
+            in 34..66 -> t = resources.getString(R.string.moderate)
+            in 67..100 -> t = resources.getString(R.string.intense)
+        }
+        activityIndicatorTextView.text = t
+        animateProgression(p)
+//        currentProgress = p
+//        activityLevelProgressIndicator.progress = p
+    }
+
+    // https://stackoverflow.com/a/49261958/9184658
+    private fun animateProgression(to: Int) {
+        val animation =
+            ObjectAnimator.ofInt(activityLevelProgressIndicator, "progress", to * 10)
+        animation.duration = 500
+        animation.interpolator = DecelerateInterpolator()
+        animation.start()
+        activityLevelProgressIndicator.clearAnimation()
+    }
+
 
 //    private fun init() {
 //    }

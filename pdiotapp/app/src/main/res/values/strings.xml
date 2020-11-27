@@ -63,12 +63,13 @@
     <string name="low_activity">Low activity</string>
     <string name="medium_activity">Medium activity</string>
     <string name="high_activity">High activity</string>
+    <string name="low">Low</string>
+    <string name="moderate">Moderate</string>
+    <string name="intense">Intense</string>
     <string name="today">Today</string>
     <string name="activity_level">Activity level</string>
-    <string name="moderate">Moderate</string>
     <string name="activity_level_today">Activity level today</string>
     <string name="time_spent_per_category">Time spent per category</string>
-    <string name="low">Low</string>
 
     <!-- Notifications   -->
     <string name="time_for_a_break">Time for a break!</string>
@@ -77,4 +78,6 @@
     <string name="movement_activity_description">Good work! Keep moving to reach your activity target!</string>
     <string name="awesome_moves">Awesome moves!</string>
     <string name="goal_reached_activity_description">Go you! You\'ve reached your daily activity target! Remember to stay hydrated!</string>
+    <string name="on_device_prediction">On-device prediction</string>
+    <string name="network_prediction">Network prediction</string>
 </resources>

@@ -171,7 +171,6 @@ public class Constants {
         add("Walking");
         add("Standing");
         add("Lying");
-        add("Movement");
         add("Running");
         add("Climbing Stairs");
         add("Descending stairs");

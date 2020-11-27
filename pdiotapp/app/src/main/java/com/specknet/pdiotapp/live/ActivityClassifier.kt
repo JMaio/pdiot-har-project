@@ -164,7 +164,7 @@ class ActivityClassifier(private val context: Context) {
         private const val XYZ_TYPE_SIZE = 3
 
         const val OUTPUT_ACTIVITIES_COUNT = 14
-        const val OUTPUT_CLASSES_COUNT = 8
+        val OUTPUT_CLASSES_COUNT = Constants.ACTIVITY_CATEGORIES.size
 
         const val MODEL_DIR = "models/"
 //        private const val MODEL_FILE = MODEL_DIR + "cnn_model_grouped_step50_1_Chest_Right.tflite"
