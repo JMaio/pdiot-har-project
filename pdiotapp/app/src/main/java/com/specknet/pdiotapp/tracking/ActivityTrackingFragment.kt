@@ -1,10 +1,7 @@
 package com.specknet.pdiotapp.tracking
 
 import android.content.Context
-import android.content.res.ColorStateList
 import android.os.Bundle
-import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,11 +10,10 @@ import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.specknet.pdiotapp.R
-import com.specknet.pdiotapp.live.ClassificationResults
-import kotlin.math.roundToInt
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -142,7 +138,12 @@ class ActivityTrackingFragment : Fragment() {
             // - replace the contents of the view with that element
             timeSpent[position].let { (icon, prog) ->
                 holder.apply {
-                    activityItemIcon.setImageDrawable(ContextCompat.getDrawable(holder.activityItemIcon.context, icon))
+                    activityItemIcon.setImageDrawable(
+                        ContextCompat.getDrawable(
+                            holder.activityItemIcon.context,
+                            icon
+                        )
+                    )
                     activityItemTimeSpent.progress = prog
                     activityItemTimeSpentText.text = String.format("%d%%", prog)
                 }

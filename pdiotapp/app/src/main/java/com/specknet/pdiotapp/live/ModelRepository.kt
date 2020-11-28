@@ -1,10 +1,9 @@
 package com.specknet.pdiotapp.live
 
-import com.specknet.pdiotapp.utils.*
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import com.specknet.pdiotapp.utils.Constants
+import com.specknet.pdiotapp.utils.RespeckData
+import com.specknet.pdiotapp.utils.RespeckDataRaw
+import com.specknet.pdiotapp.utils.toRespeckDataRaw
 
 interface ModelDataTransform<T, out R> {
     // apply the transformation with input T, output R
@@ -23,7 +22,7 @@ object FFTTransform : ModelDataTransform<List<RespeckDataRaw>, RespeckDataFFTOut
     override fun apply(model: InferenceModel, data: List<RespeckDataRaw>): RespeckDataFFTOutput =
 //        runBlocking {
         // fft already performed in a task
-            DataProcessor.fft(model, data)
+        DataProcessor.fft(model, data)
 //        return DataProcessor.fft(model, data)
 //        GlobalScope.launch {
 //        }.

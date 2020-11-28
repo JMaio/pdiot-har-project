@@ -5,10 +5,9 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.animation.DecelerateInterpolator
 import android.widget.LinearLayout
-import kotlinx.android.synthetic.main.activity_live_data.view.*
+import androidx.core.content.ContextCompat
+import com.specknet.pdiotapp.utils.Constants
 import kotlinx.android.synthetic.main.model_prediction_card.view.*
-import kotlinx.android.synthetic.main.model_prediction_card.view.modelPredictionActivityText
-import kotlinx.android.synthetic.main.model_prediction_card.view.modelPredictionConfidence
 import kotlinx.android.synthetic.main.widget_activity_indicator.view.*
 
 /**
@@ -61,6 +60,10 @@ class PredictionTextIndicator constructor(
 
     fun setActivity(a: String?) {
         modelPredictionActivityText.text = a ?: "?"
+        val icon = Constants.ACTIVITY_TO_ICON_MAP[a] ?: R.drawable.ic_baseline_help_outline_24
+        modelPredictionActivityIcon.let {
+            it.setImageDrawable(ContextCompat.getDrawable(it.context, icon))
+        }
     }
 
 
