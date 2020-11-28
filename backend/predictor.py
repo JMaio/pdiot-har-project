@@ -134,10 +134,10 @@ class Predictor:
     # input data after doing any amplitude processing
     def fftransform(self, data):
 
-        filter_freq = 12.5*0.01
+        filter_freq = 0.1 * 12.5 / 2
 
         overlap = 10
-        window_size = 25
+        window_size = 24
 
         window_spec = []
 
@@ -149,8 +149,8 @@ class Predictor:
 
             mag = np.abs(np.fft.fft(window, axis = 0))
 
-            # filtering out low frequencies to remove noise
-            mag[mag < filter_freq] = 0
+            # filtering out high frequencies to remove noise
+            mag[mag > filter_freq] = 0
 
             window_spec.append(mag)
 
@@ -195,7 +195,7 @@ class Predictor:
         label = self.get_prediction_labels(predictions)
 
         if grouped:
-            activity = self.CLASS_LABELS[label]
+            activity = self.CLASS_LABELS_NOMO[label]
         else:
             activity = self.LABELS[label]
 

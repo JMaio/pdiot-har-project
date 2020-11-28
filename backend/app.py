@@ -25,7 +25,7 @@ OPENAPI_FILE = 'openapi.json'
 WINDOW_SIZE = 100
 
 p = Path('./tensorflow/models') 
-model_name = 'cnn_model_fft_filtered01_sf_nomove_2_Chest_Right.tflite'
+model_name = 'cnn_model_window24_2_Chest_Right.tflite'
 model = p / model_name
 
 interpreter = Predictor(str(model.absolute()))
@@ -114,6 +114,7 @@ class RespeckData(Resource):
             streams[respeck_mac] = s
 
         npdata = np.array(d, dtype=np.float32).reshape((-1, 3))
+        print("Incoming data shape:")
         print(npdata.shape)
         p, l, a = interpreter.make_prediction_on_data(npdata, fft=True, grouped=True)
 
