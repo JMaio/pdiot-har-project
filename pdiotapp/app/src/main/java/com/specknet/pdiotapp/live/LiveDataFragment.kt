@@ -35,7 +35,9 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.openapitools.client.apis.DefaultApi
 import org.openapitools.client.infrastructure.ApiClient
-import retrofit2.await
+import org.openapitools.client.infrastructure.ClientException
+import org.openapitools.client.infrastructure.ServerException
+import java.net.SocketTimeoutException
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.DelayQueue
 import kotlin.math.roundToInt
@@ -47,7 +49,11 @@ class LiveDataFragment : Fragment() {
         const val API_BASE_PATH = "http://192.168.1.105:5000/api/v1"
         private const val TAG = "LiveDataActivity"
         const val floatFormat = "%.1f%%"
-        val defaultModelName = "cnn_model_4ChestRight.tflite"
+        var model: InferenceModel = ModelRepository.defaultModel
+
+        // classify every n readings
+        const val classificationInterval = 15 // roughly every 1.2 seconds
+
     }
 
     override fun setRetainInstance(retain: Boolean) {
@@ -77,7 +83,7 @@ class LiveDataFragment : Fragment() {
 
     val filterTest = IntentFilter(Constants.ACTION_INNER_RESPECK_BROADCAST)
 
-//    private lateinit var modelSelector: Spinner
+    //    private lateinit var modelSelector: Spinner
     private lateinit var modelPredictionActivityText: TextView
     private lateinit var modelPredictionConfidence: TextView
     private lateinit var networkModelPredictionActivityText: TextView
@@ -146,17 +152,17 @@ class LiveDataFragment : Fragment() {
         val view: View = inflater.inflate(R.layout.activity_live_data, container, false)
 
         activityClassifier
-            .initialize(defaultModelName)
+            .initialize(model)
             .addOnSuccessListener {
-                val w = activityClassifier.windowSize
+                val w = model.ws
                 respeckDataQueue = EvictingQueue.create(w)
                 // fill with zero packets
                 respeckDataQueue.addAll((1..w).map { zeroRespeckData })
-                Log.i(TAG, "Set up activity classifier '$defaultModelName'")
+                Log.i(TAG, "Set up activity classifier '${model.filename}'")
                 // https://stackoverflow.com/a/58665768/9184658
                 Snackbar.make(
                     modelPredictionActivityText,
-                    "Selected model '$defaultModelName' (ws=${w})",
+                    "Selected model '${model.filename}' (ws=${w})",
                     Snackbar.LENGTH_SHORT
                 ).apply {
                     setAnchorView(R.id.bottom_nav_fab)
@@ -216,13 +222,12 @@ class LiveDataFragment : Fragment() {
                     respeckDataQueue.add(data)
                     Log.d(TAG, "respeckDataQueue head = ${respeckDataQueue.peek()}")
 
-                    val interval = 25;
 
                     time += 1
                     updateGraph()
 
-                    if (time % interval == 0) {
-                        // only update every 5 data points
+                    if (time % classificationInterval == 0) {
+                        // only update every n data points
                         classifyActivity(respeckDataQueue.toList())
                         // coroutine, runs asynchronously
                         // https://kotlinlang.org/docs/tutorials/coroutines/coroutines-basic-jvm.html
@@ -237,21 +242,31 @@ class LiveDataFragment : Fragment() {
 
                         GlobalScope.launch {
                             try {
+                                Log.d(
+                                    "$TAG/flaskApiPost",
+                                    "respeckDataQueue (${respeckDataQueue.size}) => ${respeckDataQueue.toList()}"
+                                )
                                 flaskApi.postRespeckData(
                                     respeckUUID.replace(':', '-'),
-                                    org.openapitools.client.models.RespeckData(requestData),
+                                    org.openapitools.client.models.RespeckData(
+                                        respeckDataQueue.toList().map { d ->
+                                            listOf(
+                                                d.accel_x,
+                                                d.accel_y,
+                                                d.accel_z
+                                            ).map { it.toBigDecimal() }
+                                        }.toList()
+                                    ),
                                     ""
-//                                org.openapitools.client.models.RespeckData().apply {
-//                                    respeckData = respeckDataQueue.map { d ->
-//                                        listOf(d.accel_x, d.accel_y, d.accel_z).map { it.toBigDecimal() }
-//                                    }.toList()
-//                                },
-                                ).await().let { pred ->
+                                ).also { pred ->
                                     Log.d(TAG, "prediction response => $pred")
                                     //      pred.predictions[pred.label].toFloat()
                                     val p = pred.label?.let { pred.predictions?.get(it) } ?: 0
                                     val conf = String.format(floatFormat, 100 * p.toFloat())
-                                    Log.d(TAG, "prediction response => activity   = ${pred.activity}")
+                                    Log.d(
+                                        TAG,
+                                        "prediction response => activity   = ${pred.activity}"
+                                    )
                                     Log.d(TAG, "                       confidence = ${conf}")
                                     runOnUiThread {
                                         predictionTextIndicatorNetwork.apply {
@@ -261,12 +276,17 @@ class LiveDataFragment : Fragment() {
                                     }
                                 }
                             } catch (e: Exception) {
-//                            when (e) {
-//                                is ClientException ->
-//                            }
-                                // probably disconnected
-                                Log.e(TAG, "Failed to send data to API: $e\nRetrying...")
-                                connectToApi()
+                                Log.w(TAG, "API Exception: $e")
+                                when (e) {
+                                    is ClientException,
+                                    is ServerException -> {
+                                        // probably disconnected
+                                        connectToApi()
+                                    }
+                                    is SocketTimeoutException -> {
+                                    } // just timed out
+                                    else -> throw e
+                                }
                             }
                         }
                     }
@@ -450,7 +470,7 @@ class LiveDataFragment : Fragment() {
                 activities.list[position].let { (name, c) ->
                     activityName.text = name
                     confidenceIndicator.apply {
-                        progress = (c * 100).roundToInt()
+                        progress = (c * 100).roundToInt() // has been NaN before
                         progressTintList = ColorStateList.valueOf(
                             if (position == activities.maxI) {
                                 resources.getColor(R.color.accent_500, null)

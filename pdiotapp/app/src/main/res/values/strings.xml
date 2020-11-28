@@ -80,4 +80,5 @@
     <string name="goal_reached_activity_description">Go you! You\'ve reached your daily activity target! Remember to stay hydrated!</string>
     <string name="on_device_prediction">On-device prediction</string>
     <string name="network_prediction">Network prediction</string>
+    <string name="activity">Activity</string>
 </resources>
