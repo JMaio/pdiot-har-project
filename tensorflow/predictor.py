@@ -127,7 +127,7 @@ class Predictor:
     # input data after doing any amplitude processing
     def fftransform(self, data):
 
-        filter_freq = 12.5*0.01
+        filter_freq = 0.1 * 12.5 / 2
 
         overlap = 10
         window_size = 25
@@ -143,7 +143,7 @@ class Predictor:
             mag = np.abs(np.fft.fft(window, axis = 0))
 
             # filtering out low frequencies to remove noise
-            mag[mag < filter_freq] = 0
+            mag[mag > filter_freq] = 0
 
             window_spec.append(mag)
 
