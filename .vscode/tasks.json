@@ -38,14 +38,15 @@
 		},
 		{
 			"type": "shell",
-			"label": "generate android client",
+			"label": "generate android client (v5.0.0-beta3)",
 			"command": "openapi-generator-cli",
 			"args": [
 				"generate",
 				"-i http://192.168.1.105:5000/api/v1/swagger.json",
 				"-g kotlin",
 				"-o ./pdiotapp/flaskServerClientTest",
-				"--additional-properties=androidSdkVersion=30,library=multiplatform,serializationLibrary=gson,collectionType=list"
+				"--library jvm-retrofit2",
+				"--additional-properties=serializationLibrary=gson,collectionType=list"
 			],
 			"problemMatcher": []
 		},
