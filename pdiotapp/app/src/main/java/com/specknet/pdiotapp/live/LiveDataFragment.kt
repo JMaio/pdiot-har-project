@@ -37,6 +37,7 @@ import org.openapitools.client.apis.DefaultApi
 import org.openapitools.client.infrastructure.ApiClient
 import retrofit2.HttpException
 import retrofit2.await
+import java.net.ConnectException
 import java.net.SocketTimeoutException
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.DelayQueue
@@ -228,17 +229,16 @@ class LiveDataFragment : Fragment() {
 
                     if (time % classificationInterval == 0) {
                         // only update every n data points
-                        classifyActivity(respeckDataQueue.toList())
+                        try {
+                            classifyActivity(respeckDataQueue.toList())
+                        } catch (e: IllegalStateException) {
+                            // can happen by switching tabs if the Respeck is still connected
+                            // but the interpreter is closed
+                            Log.e(TAG, e.toString())
+                        }
                         // coroutine, runs asynchronously
                         // https://kotlinlang.org/docs/tutorials/coroutines/coroutines-basic-jvm.html
                         // https://developer.android.com/kotlin/coroutines
-                        val requestData = respeckDataQueue.map { d ->
-                            listOf(
-                                d.accel_x,
-                                d.accel_y,
-                                d.accel_z
-                            ).map { it.toBigDecimal() }
-                        }.toList()
 
                         GlobalScope.launch {
                             try {
@@ -250,11 +250,16 @@ class LiveDataFragment : Fragment() {
                                     respeckUUID.replace(':', '-'),
                                     org.openapitools.client.models.RespeckData(
                                         respeckDataQueue.toList().map { d ->
-                                            listOf(
-                                                d.accel_x,
-                                                d.accel_y,
-                                                d.accel_z
-                                            ).map { it.toBigDecimal() }
+                                            if (d == null) {
+                                                Log.e("$TAG/flaskApiPost/map", d.toString())
+                                                listOf(0, 0, 0).map { it.toBigDecimal() }
+                                            } else {
+                                                listOf(
+                                                    d.accel_x,
+                                                    d.accel_y,
+                                                    d.accel_z,
+                                                ).map { it.toBigDecimal() }
+                                            }
                                         }.toList()
                                     ),
                                     ""
@@ -280,11 +285,13 @@ class LiveDataFragment : Fragment() {
                                 when (e) {
                                     // probably disconnected
                                     // connectToApi()
-                                    is HttpException -> {
-                                    }
+                                    is HttpException,
+                                    is ConnectException,
                                     is SocketTimeoutException -> {
                                     } // just timed out
-                                    else -> throw e
+                                    else -> {
+                                        Log.e("$TAG/flaskApiPost", e.toString())
+                                    }
                                 }
                             }
                         }
@@ -472,9 +479,9 @@ class LiveDataFragment : Fragment() {
                         progress = (c * 100).roundToInt() // has been NaN before
                         progressTintList = ColorStateList.valueOf(
                             if (position == activities.maxI) {
-                                resources.getColor(R.color.accent_500, null)
+                                resources.getColor(R.color.colorPrimaryDark, null)
                             } else {
-                                resources.getColor(R.color.primary_500, null)
+                                resources.getColor(R.color.gray_600, null)
                             }
                         )
                     }

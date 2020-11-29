@@ -104,9 +104,6 @@ class ActivityClassifier(private val context: Context) {
     }
 
     private fun classify(data: List<RespeckData>): ClassificationResults {
-        if (!isInitialized) {
-            throw IllegalStateException("TF Lite Interpreter is not initialized yet.")
-        }
         Log.d(TAG, "Starting classification...")
 
         val preprocessedData = currentModel.applyTransforms(data)
@@ -116,7 +113,12 @@ class ActivityClassifier(private val context: Context) {
         var startTime = System.nanoTime()
         val result = Array(1) { FloatArray(currentModel.outputClasses.size) }
         // run interpreter, return results to array
-        interpreter?.run(byteBuffer, result)
+        interpreter?.let {
+            if (!isInitialized) {
+                throw IllegalStateException("TF Lite Interpreter is not initialized yet.")
+            }
+            it.run(byteBuffer, result)
+        }
         elapsedTime = (System.nanoTime() - startTime) / 1000000
         Log.d(TAG, "Inference time = " + elapsedTime + "ms")
 
