@@ -35,8 +35,8 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.openapitools.client.apis.DefaultApi
 import org.openapitools.client.infrastructure.ApiClient
-import org.openapitools.client.infrastructure.ClientException
-import org.openapitools.client.infrastructure.ServerException
+import retrofit2.HttpException
+import retrofit2.await
 import java.net.SocketTimeoutException
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.DelayQueue
@@ -258,7 +258,7 @@ class LiveDataFragment : Fragment() {
                                         }.toList()
                                     ),
                                     ""
-                                ).also { pred ->
+                                ).await().let { pred ->
                                     Log.d(TAG, "prediction response => $pred")
                                     //      pred.predictions[pred.label].toFloat()
                                     val p = pred.label?.let { pred.predictions?.get(it) } ?: 0
@@ -278,10 +278,9 @@ class LiveDataFragment : Fragment() {
                             } catch (e: Exception) {
                                 Log.w(TAG, "API Exception: $e")
                                 when (e) {
-                                    is ClientException,
-                                    is ServerException -> {
-                                        // probably disconnected
-                                        connectToApi()
+                                    // probably disconnected
+                                    // connectToApi()
+                                    is HttpException -> {
                                     }
                                     is SocketTimeoutException -> {
                                     } // just timed out
