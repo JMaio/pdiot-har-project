@@ -40,7 +40,7 @@ class Predictor:
       13: 31,  # "Desk work"
     }
 
-    LABELS = {
+    TF_LABELS = {
         0:  "Sitting",
         1:  "Sitting bent forward",
         2:  "Sitting bent backward",
@@ -75,7 +75,7 @@ class Predictor:
     }
 
     # Grouping
-    CLASS_LABELS = {
+    TF_CLASS_LABELS = {
         0: "Sitting",
         1: "Walking",
         2: "Standing",
@@ -83,18 +83,18 @@ class Predictor:
         4: "Movement",
         5: "Running",
         6: "Climbing Stairs",
-        7: "Descending stairs"
+        7: "Descending stairs",
     }
 
     # No movement class
-    CLASS_LABELS_NOMO = {
+    TF_CLASS_LABELS_NOMO = {
         0: "Sitting",
         1: "Walking",
         2: "Standing",
         3: "Lying",
-        5: "Running",
-        6: "Climbing Stairs",
-        7: "Descending stairs"
+        4: "Running",
+        5: "Climbing Stairs",
+        6: "Descending stairs",
     }
 
 
@@ -134,10 +134,10 @@ class Predictor:
     # input data after doing any amplitude processing
     def fftransform(self, data):
 
-        filter_freq = 12.5*0.01
+        filter_freq = 0.1 * 12.5 / 2
 
         overlap = 10
-        window_size = 25
+        window_size = 24
 
         window_spec = []
 
@@ -149,8 +149,8 @@ class Predictor:
 
             mag = np.abs(np.fft.fft(window, axis = 0))
 
-            # filtering out low frequencies to remove noise
-            mag[mag < filter_freq] = 0
+            # filtering out high frequencies to remove noise
+            mag[mag > filter_freq] = 0
 
             window_spec.append(mag)
 
@@ -195,9 +195,9 @@ class Predictor:
         label = self.get_prediction_labels(predictions)
 
         if grouped:
-            activity = self.CLASS_LABELS[label]
+            activity = self.TF_CLASS_LABELS_NOMO[label]
         else:
-            activity = self.LABELS[label]
+            activity = self.TF_LABELS[label]
 
         return predictions, label, activity
 

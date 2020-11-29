@@ -16,7 +16,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.ProgressBar
-import android.widget.Spinner
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -31,11 +30,14 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.common.collect.EvictingQueue
 import com.specknet.pdiotapp.R
 import com.specknet.pdiotapp.utils.*
+import kotlinx.android.synthetic.main.activity_live_data.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.openapitools.client.apis.DefaultApi
 import org.openapitools.client.infrastructure.ApiClient
+import retrofit2.HttpException
 import retrofit2.await
+import java.net.SocketTimeoutException
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.DelayQueue
 import kotlin.math.roundToInt
@@ -46,6 +48,12 @@ class LiveDataFragment : Fragment() {
     companion object {
         const val API_BASE_PATH = "http://192.168.1.105:5000/api/v1"
         private const val TAG = "LiveDataActivity"
+        const val floatFormat = "%.1f%%"
+        var model: InferenceModel = ModelRepository.defaultModel
+
+        // classify every n readings
+        const val classificationInterval = 15 // roughly every 1.2 seconds
+
     }
 
     override fun setRetainInstance(retain: Boolean) {
@@ -75,7 +83,7 @@ class LiveDataFragment : Fragment() {
 
     val filterTest = IntentFilter(Constants.ACTION_INNER_RESPECK_BROADCAST)
 
-    private lateinit var modelSelector: Spinner
+    //    private lateinit var modelSelector: Spinner
     private lateinit var modelPredictionActivityText: TextView
     private lateinit var modelPredictionConfidence: TextView
     private lateinit var networkModelPredictionActivityText: TextView
@@ -88,9 +96,9 @@ class LiveDataFragment : Fragment() {
     private lateinit var recyclerViewManager: RecyclerView.LayoutManager
 
     // for movement categories
-    private lateinit var recyclerViewCategory: RecyclerView
-    private lateinit var recyclerViewCategoryAdapter: RecyclerView.Adapter<*>
-    private lateinit var recyclerViewCategoryManager: RecyclerView.LayoutManager
+//    private lateinit var recyclerViewCategory: RecyclerView
+//    private lateinit var recyclerViewCategoryAdapter: RecyclerView.Adapter<*>
+//    private lateinit var recyclerViewCategoryManager: RecyclerView.LayoutManager
 
     private lateinit var flaskApi: DefaultApi
     private lateinit var respeckUUID: String
@@ -100,13 +108,8 @@ class LiveDataFragment : Fragment() {
     private var respeckDataQueue: EvictingQueue<RespeckData> = EvictingQueue.create(0)
 
     private var dummyClassificationResults = ClassificationResults(
-        (0 until ActivityClassifier.OUTPUT_CLASSES_COUNT).mapIndexed { _, i ->
-            ClassificationResult(
-                Constants.ACTIVITY_CATEGORIES[i],
-//                Constants.ACTIVITY_CODE_TO_NAME_MAPPING
-//                    .getOrDefault(Constants.TFCODE_TO_ACTIVITY_CODE[i], "Unknown"),
-                0f
-            )
+        Constants.ACTIVITY_CATEGORIES.map { c ->
+            ClassificationResult(c, 0f)
         }
     )
 
@@ -143,41 +146,23 @@ class LiveDataFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         super.onCreateView(inflater, container, savedInstanceState)
 
         val view: View = inflater.inflate(R.layout.activity_live_data, container, false)
 
-        // get the accel fields
-//        val accelX = view.findViewById<TextView>(R.id.accel_x)
-//        val accelY = view.findViewById<TextView>(R.id.accel_y)
-//        val accelZ = view.findViewById<TextView>(R.id.accel_z)
-//        val magTextView = view.findViewById<TextView>(R.id.magTextView)
-
-//        modelSelector = view.findViewById(R.id.modelSelectionSpinner)
-//        modelSelector.apply {
-//            adapter = modelChoiceAdapter
-//            onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-//                override fun onItemSelected(
-//                    parent: AdapterView<*>?,
-//                    view: View?,
-//                    position: Int,
-//                    id: Long
-//                ) {
-//                    val name = adapter.getItem(position) as String
-        val name = "cnn_model_4ChestRight.tflite"
         activityClassifier
-            .initialize(name)
+            .initialize(model)
             .addOnSuccessListener {
-                val w = activityClassifier.windowSize
+                val w = model.ws
                 respeckDataQueue = EvictingQueue.create(w)
                 // fill with zero packets
                 respeckDataQueue.addAll((1..w).map { zeroRespeckData })
-                Log.i(TAG, "Set up activity classifier '$name'")
+                Log.i(TAG, "Set up activity classifier '${model.filename}'")
                 // https://stackoverflow.com/a/58665768/9184658
                 Snackbar.make(
                     modelPredictionActivityText,
-                    "Selected model '$name' (ws=${w})",
+                    "Selected model '${model.filename}' (ws=${w})",
                     Snackbar.LENGTH_SHORT
                 ).apply {
                     setAnchorView(R.id.bottom_nav_fab)
@@ -186,12 +171,6 @@ class LiveDataFragment : Fragment() {
             .addOnFailureListener { e ->
                 Log.e(TAG, "Error setting up activity classifier.", e)
             }
-//                }
-//
-//                override fun onNothingSelected(parent: AdapterView<*>?) {}
-//            }
-//        }
-
 
         modelPredictionActivityText = view.findViewById(R.id.modelPredictionActivityText)
         modelPredictionConfidence = view.findViewById(R.id.modelPredictionConfidence)
@@ -202,7 +181,6 @@ class LiveDataFragment : Fragment() {
 
         connectToApi()
 
-//        Log.i(TAG, "assets: ${assets.list("")?.map { s -> s }}")
 
         // https://stackoverflow.com/q/60430697/9184658
 
@@ -244,13 +222,12 @@ class LiveDataFragment : Fragment() {
                     respeckDataQueue.add(data)
                     Log.d(TAG, "respeckDataQueue head = ${respeckDataQueue.peek()}")
 
-                    val interval = 25;
 
                     time += 1
                     updateGraph()
 
-                    if (time % interval == 0) {
-                        // only update every 5 data points
+                    if (time % classificationInterval == 0) {
+                        // only update every n data points
                         classifyActivity(respeckDataQueue.toList())
                         // coroutine, runs asynchronously
                         // https://kotlinlang.org/docs/tutorials/coroutines/coroutines-basic-jvm.html
@@ -265,39 +242,50 @@ class LiveDataFragment : Fragment() {
 
                         GlobalScope.launch {
                             try {
+                                Log.d(
+                                    "$TAG/flaskApiPost",
+                                    "respeckDataQueue (${respeckDataQueue.size}) => ${respeckDataQueue.toList()}"
+                                )
                                 flaskApi.postRespeckData(
                                     respeckUUID.replace(':', '-'),
-                                    org.openapitools.client.models.RespeckData(requestData),
+                                    org.openapitools.client.models.RespeckData(
+                                        respeckDataQueue.toList().map { d ->
+                                            listOf(
+                                                d.accel_x,
+                                                d.accel_y,
+                                                d.accel_z
+                                            ).map { it.toBigDecimal() }
+                                        }.toList()
+                                    ),
                                     ""
-//                                org.openapitools.client.models.RespeckData().apply {
-//                                    respeckData = respeckDataQueue.map { d ->
-//                                        listOf(d.accel_x, d.accel_y, d.accel_z).map { it.toBigDecimal() }
-//                                    }.toList()
-//                                },
                                 ).await().let { pred ->
                                     Log.d(TAG, "prediction response => $pred")
                                     //      pred.predictions[pred.label].toFloat()
-                                    val p: Float = pred.label?.let { pred.predictions?.get(it) }
-                                        ?.toFloat()
-                                        ?: 0f
-                                    val conf = String.format("%.2f%%", 100 * p)
+                                    val p = pred.label?.let { pred.predictions?.get(it) } ?: 0
+                                    val conf = String.format(floatFormat, 100 * p.toFloat())
                                     Log.d(
                                         TAG,
                                         "prediction response => activity   = ${pred.activity}"
                                     )
                                     Log.d(TAG, "                       confidence = ${conf}")
                                     runOnUiThread {
-                                        networkModelPredictionActivityText.text = pred.activity
-                                        networkModelPredictionConfidence.text = conf
+                                        predictionTextIndicatorNetwork.apply {
+                                            setActivity(pred.activity)
+                                            setConfidence(conf)
+                                        }
                                     }
                                 }
                             } catch (e: Exception) {
-//                            when (e) {
-//                                is ClientException ->
-//                            }
-                                // probably disconnected
-                                Log.e(TAG, "Failed to send data to API: $e\nRetrying...")
-                                connectToApi()
+                                Log.w(TAG, "API Exception: $e")
+                                when (e) {
+                                    // probably disconnected
+                                    // connectToApi()
+                                    is HttpException -> {
+                                    }
+                                    is SocketTimeoutException -> {
+                                    } // just timed out
+                                    else -> throw e
+                                }
                             }
                         }
                     }
@@ -313,6 +301,15 @@ class LiveDataFragment : Fragment() {
         ctx.registerReceiver(respeckLiveUpdateReceiver, filterTest, null, handler)
 //        return super.onCreateView(inflater, container, savedInstanceState)
         return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        predictionTextIndicatorOnDevice
+        predictionTextIndicatorNetwork.apply {
+            setIcon(R.drawable.ic_baseline_wifi_24)
+            setDescription(R.string.network_prediction)
+        }
     }
 
     override fun onDestroy() {
@@ -421,16 +418,16 @@ class LiveDataFragment : Fragment() {
         }
 
         // category view, almost equivalent to other recycler view
-        recyclerViewCategoryManager = object : LinearLayoutManager(view.context) {
-            override fun canScrollVertically(): Boolean = false
-        }
-        recyclerViewAdapter = ActivityRecyclerAdapter(ClassificationResults(emptyList()))
-        recyclerViewCategory =
-            view.findViewById<RecyclerView>(R.id.activityCategoriesRecyclerView).apply {
-                setHasFixedSize(true)
-                layoutManager = recyclerViewCategoryManager
-                adapter = recyclerViewAdapter
-            }
+//        recyclerViewCategoryManager = object : LinearLayoutManager(view.context) {
+//            override fun canScrollVertically(): Boolean = false
+//        }
+//        recyclerViewAdapter = ActivityRecyclerAdapter(ClassificationResults(emptyList()))
+//        recyclerViewCategory =
+//            view.findViewById<RecyclerView>(R.id.activityCategoriesRecyclerView).apply {
+//                setHasFixedSize(true)
+//                layoutManager = recyclerViewCategoryManager
+//                adapter = recyclerViewAdapter
+//            }
     }
 
     //
@@ -472,7 +469,7 @@ class LiveDataFragment : Fragment() {
                 activities.list[position].let { (name, c) ->
                     activityName.text = name
                     confidenceIndicator.apply {
-                        progress = (c * 100).roundToInt()
+                        progress = (c * 100).roundToInt() // has been NaN before
                         progressTintList = ColorStateList.valueOf(
                             if (position == activities.maxI) {
                                 resources.getColor(R.color.accent_500, null)
@@ -515,9 +512,13 @@ class LiveDataFragment : Fragment() {
 //                    )
 //                    recyclerViewCategory.adapter = ActivityRecyclerAdapter(categorizedResults)
 
-                    res.max.let { (name, c) ->
-                        modelPredictionActivityText.text = name
-                        modelPredictionConfidence.text = String.format("%.2f%%", 100 * c)
+                    res.max.let { (activity, c) ->
+                        predictionTextIndicatorOnDevice.apply {
+                            setActivity(activity)
+                            setConfidence(String.format(floatFormat, 100 * c))
+                        }
+//                        modelPredictionActivityText.text = name
+//                        modelPredictionConfidence.text = String.format("%.2f%%", 100 * c)
                     }
                 }
                 .addOnFailureListener { e ->

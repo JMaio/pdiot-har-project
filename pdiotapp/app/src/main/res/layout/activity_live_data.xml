@@ -21,76 +21,85 @@
         android:id="@+id/predictionCards"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:orientation="horizontal"
+        android:layout_marginTop="8dp"
+        android:gravity="start"
+        android:orientation="vertical"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/chart">
 
+        <com.specknet.pdiotapp.PredictionTextIndicator
+            android:id="@+id/predictionTextIndicatorOnDevice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <com.specknet.pdiotapp.PredictionTextIndicator
+            android:id="@+id/predictionTextIndicatorNetwork"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
         <androidx.cardview.widget.CardView
             android:id="@+id/cardView"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="4dp"
+            android:layout_marginLeft="16dp"
             android:layout_marginTop="8dp"
-            android:layout_marginRight="4dp"
+            android:layout_marginRight="16dp"
             android:layout_marginBottom="8dp"
-            app:cardCornerRadius="8dp">
+            android:minWidth="300dp"
+            android:padding="12dp"
+            android:visibility="gone"
+            app:cardCornerRadius="100dp">
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/predictionCardLayout"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:minWidth="150dp"
-                android:paddingLeft="16dp"
-                android:paddingTop="12dp"
-                android:paddingRight="16dp"
-                android:paddingBottom="12dp">
-
-                <TextView
-                    android:id="@+id/modelPredictionActivityText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/ellipsis"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Large"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    tools:text="Standing" />
+                android:gravity="bottom|center"
+                android:orientation="horizontal"
+                android:padding="12dp"
+                android:paddingStart="24dp"
+                android:paddingEnd="24dp">
 
                 <TextView
                     android:id="@+id/modelPredictionConfidence"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
                     android:fontFamily="monospace"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/modelPredictionActivityText"
+                    app:drawableTopCompat="@drawable/ic_baseline_phonelink_setup_24"
                     tools:text="45.6%" />
 
-                <ImageView
-                    android:id="@+id/imageView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@drawable/ic_baseline_phonelink_setup_24"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/modelPredictionConfidence" />
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginRight="8dp"
+                    android:background="@color/colorPrimary" />
 
-                <Spinner
-                    android:id="@+id/modelSelectionSpinner"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:visibility="gone"
-                    app:layout_constrainedWidth="true"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/modelPredictionConfidence"
-                    app:layout_constraintWidth_max="300dp" />
+                    android:orientation="vertical">
 
-            </androidx.constraintlayout.widget.ConstraintLayout>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/on_device_prediction"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                        android:textSize="12sp"
+                        android:textStyle="italic" />
+
+                    <TextView
+                        android:id="@+id/modelPredictionActivityText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="sans-serif-light"
+                        android:text="@string/ellipsis"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                        tools:text="Standing" />
+                </LinearLayout>
+
+            </LinearLayout>
+
         </androidx.cardview.widget.CardView>
 
         <androidx.cardview.widget.CardView
@@ -101,6 +110,7 @@
             android:layout_marginTop="8dp"
             android:layout_marginRight="4dp"
             android:layout_marginBottom="8dp"
+            android:visibility="gone"
             app:cardCornerRadius="8dp">
 
             <androidx.constraintlayout.widget.ConstraintLayout
@@ -237,9 +247,9 @@
                 android:id="@+id/activityTypesRecyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingLeft="8dp"
-                android:paddingRight="8dp"
-                tools:itemCount="14"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp"
+                tools:itemCount="7"
                 tools:listitem="@layout/activity_classification_confidence_row" />
 
             <!-- horizontal separator: https://stackoverflow.com/a/19115414/9184658 -->

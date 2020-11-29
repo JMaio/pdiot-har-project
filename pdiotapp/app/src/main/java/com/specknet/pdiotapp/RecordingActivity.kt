@@ -14,7 +14,6 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.specknet.pdiotapp.utils.Constants
 import com.specknet.pdiotapp.utils.CountUpTimer
-import com.specknet.pdiotapp.utils.Utils
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -111,7 +110,7 @@ class RecordingActivity : AppCompatActivity() {
 
                     lastProcessedMinute = currentProcessedMinute
 
-                    if(!fileClosed) {
+                    if (!fileClosed) {
 
                         appendToFile(x, y, z, ts)
                     }
@@ -131,7 +130,7 @@ class RecordingActivity : AppCompatActivity() {
         timer = findViewById(R.id.count_up_timer_text)
         timer.visibility = View.INVISIBLE
 
-        countUpTimer = object: CountUpTimer(1000) {
+        countUpTimer = object : CountUpTimer(1000) {
             override fun onTick(elapsedTime: Long) {
                 val date = Date(elapsedTime)
                 val formatter = SimpleDateFormat("mm:ss")
@@ -158,8 +157,13 @@ class RecordingActivity : AppCompatActivity() {
             sensorPositionSpinner.adapter = adapter
         }
 
-        sensorPositionSpinner.onItemSelectedListener = object: AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>, viwq: View, position: Int, id: Long) {
+        sensorPositionSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>,
+                viwq: View,
+                position: Int,
+                id: Long
+            ) {
                 val selectedItem = parent.getItemAtPosition(position).toString()
                 sensorPosition = selectedItem
             }
@@ -180,7 +184,12 @@ class RecordingActivity : AppCompatActivity() {
         }
 
         sensorSideSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>, viwq: View, position: Int, id: Long) {
+            override fun onItemSelected(
+                parent: AdapterView<*>,
+                viwq: View,
+                position: Int,
+                id: Long
+            ) {
                 val selectedItem = parent.getItemAtPosition(position).toString()
                 sensorSide = selectedItem
             }
@@ -201,7 +210,12 @@ class RecordingActivity : AppCompatActivity() {
         }
 
         activityTypeSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>, viwq: View, position: Int, id: Long) {
+            override fun onItemSelected(
+                parent: AdapterView<*>,
+                viwq: View,
+                position: Int,
+                id: Long
+            ) {
                 val selectedItem = parent.getItemAtPosition(position).toString()
                 activityType = Constants.ACTIVITY_NAME_TO_CODE_MAPPING[selectedItem].toString()
             }
@@ -210,7 +224,6 @@ class RecordingActivity : AppCompatActivity() {
                 activityType = Constants.ACTIVITY_NAME_TO_CODE_MAPPING["Sitting"].toString()
             }
         }
-
 
 
     }
@@ -278,18 +291,18 @@ class RecordingActivity : AppCompatActivity() {
     private fun createFile() {
 
         val activityTypeName = Constants.ACTIVITY_CODE_TO_NAME_MAPPING[activityType.toInt()]
-        val fileName = "${universalSubjectId}_${activityTypeName}_${sensorPosition}_${sensorSide}_${System.currentTimeMillis()}.csv"
+        val fileName =
+            "${universalSubjectId}_${activityTypeName}_${sensorPosition}_${sensorSide}_${System.currentTimeMillis()}.csv"
         val file = File(getExternalFilesDir(null), fileName)
 
-        if(file.exists()) {
+        if (file.exists()) {
             Log.i("recording", "file exists!")
             try {
                 writer = OutputStreamWriter(FileOutputStream(file, true))
             } catch (e: IOException) {
                 Log.e("recording", "error while writing to the file")
             }
-        }
-        else {
+        } else {
             try {
                 writer = OutputStreamWriter(FileOutputStream(file, true))
                 // the header columns in here
@@ -301,7 +314,7 @@ class RecordingActivity : AppCompatActivity() {
                 writer.append(Constants.RECORDING_CSV_HEADER).append("\n")
                 writer.flush()
                 writer.flush()
-            } catch (e: IOException){
+            } catch (e: IOException) {
                 Log.e("recording", "error while writing to the file")
             }
         }

@@ -1,0 +1,82 @@
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minWidth="300dp"
+        android:padding="8dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginBottom="6dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        app:cardCornerRadius="100dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:padding="8dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp">
+
+            <TextView
+                android:id="@+id/modelPredictionConfidence"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ems="3"
+                android:fontFamily="monospace"
+                android:singleLine="true"
+                android:textAlignment="center"
+                android:textSize="12sp"
+                app:drawableTopCompat="@drawable/ic_baseline_phonelink_setup_24"
+                tools:text="100.0%" />
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:background="@color/colorPrimary" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/model_origin_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/on_device_prediction"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                    android:textSize="12sp"
+                    android:textStyle="italic" />
+
+                <TextView
+                    android:id="@+id/modelPredictionActivityText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-light"
+                    android:singleLine="true"
+                    android:text="@string/ellipsis"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                    tools:text="@string/sitting_activity_description" />
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/modelPredictionActivityIcon"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_weight="0"
+                app:srcCompat="@drawable/ic_baseline_help_outline_24" />
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+</merge>
