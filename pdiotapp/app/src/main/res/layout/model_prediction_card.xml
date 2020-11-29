@@ -3,17 +3,18 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
     <androidx.cardview.widget.CardView
         android:id="@+id/cardView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginBottom="6dp"
         android:minWidth="300dp"
         android:padding="8dp"
-        android:layout_marginTop="2dp"
-        android:layout_marginBottom="6dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        app:cardCornerRadius="100dp">
+        app:cardCornerRadius="32dp">
 
         <LinearLayout
             android:layout_width="match_parent"
