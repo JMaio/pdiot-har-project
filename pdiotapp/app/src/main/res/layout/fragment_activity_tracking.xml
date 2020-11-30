@@ -8,13 +8,13 @@
     android:orientation="vertical"
     tools:context=".tracking.ActivityTrackingFragment">
 
-    <com.specknet.pdiotapp.ActivityIndicator
+    <com.specknet.pdiotapp.tracking.ActivityIndicator
         android:id="@+id/activityTrackingCompoundIndicator"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="16dp">
 
-    </com.specknet.pdiotapp.ActivityIndicator>
+    </com.specknet.pdiotapp.tracking.ActivityIndicator>
 
     <View
         android:id="@+id/divider"

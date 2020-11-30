@@ -1,4 +1,4 @@
-package com.specknet.pdiotapp
+package com.specknet.pdiotapp.tracking
 
 import android.animation.ObjectAnimator
 import android.app.NotificationChannel
@@ -6,13 +6,20 @@ import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
 import android.util.AttributeSet
+import android.util.Log
 import android.view.animation.DecelerateInterpolator
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.SeekBar
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
+import androidx.core.view.size
+import androidx.recyclerview.widget.RecyclerView
+import com.specknet.pdiotapp.R
+import com.specknet.pdiotapp.live.LiveDataFragment
 import kotlinx.android.synthetic.main.widget_activity_indicator.view.*
+import kotlinx.coroutines.runBlocking
 
 
 private const val CHANNEL_ID = "PDIoT.ActivityNotificationChannel"
@@ -30,8 +37,17 @@ class ActivityIndicator @JvmOverloads constructor(
     private val activityIndicatorIconStanding: ImageView
     private val activityIndicatorIconRunning: ImageView
 
+    lateinit var activityLevelRecyclerView: RecyclerView
+
+//    private lateinit var timeSpentList: TimeSpentList
+
+    //    private val noTint = ContextCompat.getColorStateList()
+    private val colorPrimaryDark =
+        ContextCompat.getColorStateList(context, R.color.colorPrimaryDark)
+    private val defaultTint = ContextCompat.getColorStateList(context, R.color.gray_600)
+
     //    private val activityIndicatorText: TextView
-    var currentProgress: Int = 0; private set
+//    var currentProgress: Int = 0; private set
 
     init {
         inflate(context, R.layout.widget_activity_indicator, this)
@@ -52,10 +68,20 @@ class ActivityIndicator @JvmOverloads constructor(
         activityIndicatorIconStanding = findViewById(R.id.activityIndicatorIconStanding)
         activityIndicatorIconRunning = findViewById(R.id.activityIndicatorIconRunning)
 
-//        activityIndicatorText = findViewById(R.id.activityIndicatorTextView)
-
         createNotificationChannel()
         setClickListeners()
+
+//        runBlocking {
+//            activityLevelRecyclerView = findViewById(R.id.activityBreakdownRecyclerView)
+//            // wait until this is found
+////            activityLevelRecyclerView.also {
+////                setProgress(activityVeryLowData)
+////            }
+//        }
+
+//        activityIndicatorText = findViewById(R.id.activityIndicatorTextView)
+
+
     }
 
     private fun setClickListeners() {
@@ -71,7 +97,7 @@ class ActivityIndicator @JvmOverloads constructor(
                     // notificationId is a unique int for each notification that you must define
                     notify(0, n.build())
                 }
-                setProgress(20)
+                setProgress(activityLowData)
                 performClick()
                 true
             }
@@ -87,7 +113,7 @@ class ActivityIndicator @JvmOverloads constructor(
                     // notificationId is a unique int for each notification that you must define
                     notify(0, n.build())
                 }
-                setProgress(50)
+                setProgress(activityModerateData)
                 performClick()
                 true
             }
@@ -103,7 +129,7 @@ class ActivityIndicator @JvmOverloads constructor(
                     // notificationId is a unique int for each notification that you must define
                     notify(0, n.build())
                 }
-                setProgress(80)
+                setProgress(activityIntenseData)
                 performClick()
                 true
             }
@@ -127,30 +153,62 @@ class ActivityIndicator @JvmOverloads constructor(
         }
     }
 
-    fun setProgress(n: Number) {
+    fun setProgress(t: TimeSpentList) {
+
+
         // convert to int for progress bar
-        val p: Int = if (n in 0..100) n as Int else -1
-        var t = "?"
+        val p: Int = t.getActivityPercent()
+        var txt = "?"
+        activityIndicatorIconSitting.imageTintList = defaultTint
+        activityIndicatorIconStanding.imageTintList = defaultTint
+        activityIndicatorIconRunning.imageTintList = defaultTint
         when (p) {
-            in 0..33 -> t = resources.getString(R.string.low)
-            in 34..66 -> t = resources.getString(R.string.moderate)
-            in 67..100 -> t = resources.getString(R.string.intense)
+            in 0..33 -> {
+                txt = resources.getString(R.string.low)
+                activityIndicatorIconSitting.imageTintList = colorPrimaryDark
+            }
+            in 34..66 -> {
+                txt = resources.getString(R.string.moderate)
+                activityIndicatorIconStanding.imageTintList = colorPrimaryDark
+            }
+            in 67..100 -> {
+                txt = resources.getString(R.string.intense)
+                activityIndicatorIconRunning.imageTintList = colorPrimaryDark
+            }
         }
-        activityIndicatorTextView.text = t
-        animateProgression(p)
+        activityIndicatorTextView.text = txt
+        animateProgression(activityLevelProgressIndicator, p, stepMultiplier = 10)
+
+//        activityLevelRecyclerView.adapter?.notifyDataSetChanged() // = LiveDataFragment.ActivityRecyclerAdapter(res)
+        // update the data in a sligthly brute-force way
+        t.toList().mapIndexed { i, level ->
+            // for each activity
+            activityLevelRecyclerView.adapter = ActivityTrackingFragment.ActivityTimeSpentRecyclerAdapter(t)
+            // https://stackoverflow.com/a/57270569/9184658
+//            Log.i("$TAG/setProgress", activityLevelRecyclerView.adapter?.itemCount.toString())
+//            (activityLevelRecyclerView.findViewHolderForAdapterPosition() as ActivityTrackingFragment.ActivityTimeSpentRecyclerAdapter.ActivityTimeSpentRecyclerViewHolder).let {
+//            }
+//            animateProgression(
+//                (activityLevelRecyclerView.findViewHolderForLayoutPosition(i) as ActivityTrackingFragment.ActivityTimeSpentRecyclerAdapter.ActivityTimeSpentRecyclerViewHolder).activityItemTimeSpent,
+//                level,
+//                stepMultiplier = 10,
+//            )
+        }
+
+
 //        currentProgress = p
 //        activityLevelProgressIndicator.progress = p
     }
 
     // https://stackoverflow.com/a/49261958/9184658
-    private fun animateProgression(to: Int) {
-        val animation =
-            ObjectAnimator.ofInt(activityLevelProgressIndicator, "progress", to * 10)
-        animation.duration = 500
-        animation.interpolator = DecelerateInterpolator()
-        animation.start()
-        activityLevelProgressIndicator.clearAnimation()
-    }
+//    private fun animateProgression(to: Int) {
+//        val animation =
+//            ObjectAnimator.ofInt(activityLevelProgressIndicator, "progress", to * 10)
+//        animation.duration = 500
+//        animation.interpolator = DecelerateInterpolator()
+//        animation.start()
+//        activityLevelProgressIndicator.clearAnimation()
+//    }
 
 
 //    private fun init() {
