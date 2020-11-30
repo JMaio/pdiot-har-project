@@ -177,7 +177,7 @@ class ActivityIndicator @JvmOverloads constructor(
             }
         }
         activityIndicatorTextView.text = txt
-        animateProgression(activityLevelProgressIndicator, p)
+        animateProgression(activityLevelProgressIndicator, p, stepMultiplier = 10)
 
 //        activityLevelRecyclerView.adapter?.notifyDataSetChanged() // = LiveDataFragment.ActivityRecyclerAdapter(res)
         // update the data in a sligthly brute-force way

@@ -117,7 +117,11 @@ class ActivityClassifier(private val context: Context) {
             if (!isInitialized) {
                 throw IllegalStateException("TF Lite Interpreter is not initialized yet.")
             }
-            it.run(byteBuffer, result)
+            try {
+                it.run(byteBuffer, result)
+            } catch (e: Exception) {
+                Log.e(TAG, e.toString())
+            }
         }
         elapsedTime = (System.nanoTime() - startTime) / 1000000
         Log.d(TAG, "Inference time = " + elapsedTime + "ms")
