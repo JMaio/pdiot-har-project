@@ -1,10 +1,12 @@
 package com.specknet.pdiotapp.tracking
 
+import android.animation.ObjectAnimator
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.DecelerateInterpolator
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
@@ -14,21 +16,34 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.specknet.pdiotapp.R
+import kotlin.math.min
+import kotlin.math.roundToInt
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
+// activity percent is calculated as the sum of the percent spent (standing*0.5) / (walking*1) / (running*2)
+class TimeSpentList(val lay: Int, val sit: Int, val stand: Int, val walk: Int, val run: Int) {
+    constructor(t: TimeSpentList) : this(t.lay, t.sit, t.stand, t.walk, t.run)
 
-typealias TimeSpentList = List<Pair<Int, Int>>
+    fun toList() = listOf(lay, sit, stand, walk, run)
 
-private val startData: TimeSpentList = listOf(
-    (R.drawable.ic_baseline_airline_seat_flat_24 to 23),
-    (R.drawable.ic_baseline_airline_seat_recline_normal_24 to 43),
-    (R.drawable.ic_baseline_accessibility_new_24 to 5),
-    (R.drawable.ic_baseline_directions_walk_24 to 24),
-    (R.drawable.ic_baseline_directions_run_24 to 10),
+    fun getActivityPercent(): Int =
+        min(.75 * stand + 1.5 * walk + 3 * run, 100.0).roundToInt()
+
+    val size: Int get() = toList().size
+}
+
+private val activityIcons = listOf(
+    R.drawable.ic_baseline_airline_seat_flat_24,
+    R.drawable.ic_baseline_airline_seat_recline_normal_24,
+    R.drawable.ic_baseline_accessibility_new_24,
+    R.drawable.ic_baseline_directions_walk_24,
+    R.drawable.ic_baseline_directions_run_24,
 )
+
+val activityVeryLowData = TimeSpentList(56, 42, 3, 4, 0)
+val activityLowData = TimeSpentList(24, 59, 9, 7, 1)
+val activityModerateData = TimeSpentList(14, 52, 10, 18, 6)
+val activityIntenseData = TimeSpentList(11, 36, 14, 25, 14)
+
 
 /**
  * A simple [Fragment] subclass.
@@ -36,9 +51,6 @@ private val startData: TimeSpentList = listOf(
  * create an instance of this fragment.
  */
 class ActivityTrackingFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
     private lateinit var ctx: Context
 
@@ -46,6 +58,9 @@ class ActivityTrackingFragment : Fragment() {
     private lateinit var recyclerViewAdapter: RecyclerView.Adapter<*>
     private lateinit var recyclerViewManager: RecyclerView.LayoutManager
 
+    private lateinit var activityIndicator: ActivityIndicator
+
+//    var timeSpentList = TimeSpentList(activityVeryLowData)
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -67,8 +82,16 @@ class ActivityTrackingFragment : Fragment() {
         // Inflate the layout for this fragment
         val view: View = inflater.inflate(R.layout.fragment_activity_tracking, container, false)
         setupRecyclerViews(view)
+
         return view
     }
+
+//    override fun onStart() {
+//        super.onStart()
+//        activityIndicator.apply {
+//            setProgress(activityVeryLowData)
+//        }
+//    }
 
     private fun setupRecyclerViews(view: View) {
         // https://stackoverflow.com/a/17516998/9184658
@@ -76,7 +99,8 @@ class ActivityTrackingFragment : Fragment() {
         recyclerViewManager = object : LinearLayoutManager(ctx) {
             override fun canScrollVertically(): Boolean = false
         }
-        recyclerViewAdapter = ActivityTimeSpentRecyclerAdapter(startData)
+        // set the initial data
+        recyclerViewAdapter = ActivityTimeSpentRecyclerAdapter(activityVeryLowData)
         recyclerView = view.findViewById<RecyclerView>(R.id.activityBreakdownRecyclerView).apply {
             // use this setting to improve performance if you know that changes
             // in content do not change the layout size of the RecyclerView
@@ -87,6 +111,11 @@ class ActivityTrackingFragment : Fragment() {
             adapter = recyclerViewAdapter
         }
 
+        activityIndicator = view.findViewById(R.id.activityTrackingCompoundIndicator)
+        activityIndicator.apply {
+            activityLevelRecyclerView = recyclerView
+            setProgress(activityVeryLowData)
+        }
 //        // category view, almost equivalent to other recycler view
 //        recyclerViewCategoryManager = object : LinearLayoutManager(view.context) {
 //            override fun canScrollVertically(): Boolean = false
@@ -101,7 +130,7 @@ class ActivityTrackingFragment : Fragment() {
     }
 
     //
-    class ActivityTimeSpentRecyclerAdapter(private val timeSpent: TimeSpentList) :
+    class ActivityTimeSpentRecyclerAdapter(var timeSpent: TimeSpentList) :
         RecyclerView.Adapter<ActivityTimeSpentRecyclerAdapter.ActivityTimeSpentRecyclerViewHolder>() {
 
         // Provide a reference to the views for each data item
@@ -136,7 +165,7 @@ class ActivityTrackingFragment : Fragment() {
         override fun onBindViewHolder(holder: ActivityTimeSpentRecyclerViewHolder, position: Int) {
             // - get element from your dataset at this position
             // - replace the contents of the view with that element
-            timeSpent[position].let { (icon, prog) ->
+            activityIcons.zip(timeSpent.toList())[position].let { (icon, prog) ->
                 holder.apply {
                     activityItemIcon.setImageDrawable(
                         ContextCompat.getDrawable(
@@ -144,7 +173,8 @@ class ActivityTrackingFragment : Fragment() {
                             icon
                         )
                     )
-                    activityItemTimeSpent.progress = prog
+//                    activityItemTimeSpent.progress = prog
+                    animateProgression(activityItemTimeSpent, prog, stepMultiplier = 10)
                     activityItemTimeSpentText.text = String.format("%d%%", prog)
                 }
 //                activities.list[position].let { (name, c) ->
@@ -164,6 +194,7 @@ class ActivityTrackingFragment : Fragment() {
             }
         }
 
+
         // Return the size of your dataset (invoked by the layout manager)
         override fun getItemCount(): Int {
             return timeSpent.size
@@ -172,22 +203,17 @@ class ActivityTrackingFragment : Fragment() {
 
     companion object {
         private const val TAG = "ActivityTrackingFragment"
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment ActivityTrackingFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-//        @JvmStatic
-//        fun newInstance(param1: String, param2: String) =
-//            ActivityTrackingFragment().apply {
-//                arguments = Bundle().apply {
-//                    putString(ARG_PARAM1, param1)
-//                    putString(ARG_PARAM2, param2)
-//                }
-//            }
     }
+}
+
+// generic progress bar animator
+// https://stackoverflow.com/a/49261958/9184658
+fun animateProgression(bar: ProgressBar, to: Int, duration: Long = 500, stepMultiplier: Int = 1) {
+    bar.max = 100 * stepMultiplier
+    val animation =
+        ObjectAnimator.ofInt(bar, "progress", bar.progress, to * stepMultiplier)
+    animation.duration = duration
+    animation.interpolator = DecelerateInterpolator()
+    animation.start()
+    bar.clearAnimation()
 }

@@ -24,8 +24,7 @@
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:progress="35" />
+        android:layout_weight="1" />
 
     <TextView
         android:id="@+id/activityItemTimeSpentText"
@@ -38,5 +37,5 @@
         android:fontFamily="monospace"
         android:textAlignment="textEnd"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-        tools:text="35%" />
+        tools:text="0%" />
 </LinearLayout>

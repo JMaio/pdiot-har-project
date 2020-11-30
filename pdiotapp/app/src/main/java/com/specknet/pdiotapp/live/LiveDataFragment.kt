@@ -231,7 +231,8 @@ class LiveDataFragment : Fragment() {
                         // only update every n data points
                         try {
                             classifyActivity(respeckDataQueue.toList())
-                        } catch (e: IllegalStateException) {
+                        } catch (e: Exception) {
+                            // catch all exceptions here to keep it from crashing as much as possible
                             // can happen by switching tabs if the Respeck is still connected
                             // but the interpreter is closed
                             Log.e(TAG, e.toString())
@@ -288,7 +289,9 @@ class LiveDataFragment : Fragment() {
                                     is HttpException,
                                     is ConnectException,
                                     is SocketTimeoutException -> {
-                                    } // just timed out
+                                        // probably just timed out / disconnected
+                                        Log.w("$TAG/flaskApiPost", e.toString())
+                                    }
                                     else -> {
                                         Log.e("$TAG/flaskApiPost", e.toString())
                                     }
