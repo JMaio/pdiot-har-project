@@ -109,8 +109,7 @@ class ActivityClassifier(private val context: Context) {
         val preprocessedData = currentModel.applyTransforms(data)
         val byteBuffer = respeckDataToModelInput(preprocessedData)
 
-        var elapsedTime: Long
-        var startTime = System.nanoTime()
+        val startTime = System.nanoTime()
         val result = Array(1) { FloatArray(currentModel.outputClasses.size) }
         // run interpreter, return results to array
         interpreter?.let {
@@ -123,8 +122,8 @@ class ActivityClassifier(private val context: Context) {
                 Log.e(TAG, e.toString())
             }
         }
-        elapsedTime = (System.nanoTime() - startTime) / 1000000
-        Log.d(TAG, "Inference time = " + elapsedTime + "ms")
+        val elapsedTime = (System.nanoTime() - startTime) / 1000000
+        Log.d(TAG, "Inference time = $elapsedTime ms")
 
         return ClassificationResults(result[0].mapIndexed { i, f ->
             Log.d(TAG, "inference: ${currentModel.outputClasses[i]} => $f")

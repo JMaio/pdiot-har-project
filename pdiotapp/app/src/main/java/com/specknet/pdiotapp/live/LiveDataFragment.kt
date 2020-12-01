@@ -247,6 +247,7 @@ class LiveDataFragment : Fragment() {
                                     "$TAG/flaskApiPost",
                                     "respeckDataQueue (${respeckDataQueue.size}) => ${respeckDataQueue.toList()}"
                                 )
+                                val startTime = System.nanoTime()
                                 flaskApi.postRespeckData(
                                     respeckUUID.replace(':', '-'),
                                     org.openapitools.client.models.RespeckData(
@@ -281,6 +282,8 @@ class LiveDataFragment : Fragment() {
                                         }
                                     }
                                 }
+                                val elapsedTime = (System.nanoTime() - startTime) / 1000000
+                                Log.i(TAG, "Network request time = $elapsedTime ms")
                             } catch (e: Exception) {
                                 Log.w(TAG, "API Exception: $e")
                                 when (e) {
