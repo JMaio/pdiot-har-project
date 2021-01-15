@@ -6,6 +6,7 @@ from flask_restx import fields, Resource, Api, reqparse
 # from werkzeug.exceptions import BadRequest
 from flask_cors import CORS
 import time
+import timeit
 import json
 from stream_queue import StreamWriter
 from predictor import Predictor
@@ -14,6 +15,9 @@ import numpy as np
 
 # https://stackoverflow.com/a/22772916/9184658
 from collections import deque
+
+LOGFILENAME = 'server.log'
+# TIME_FMT = .2f
 
 
 API_PREFIX = '/api/v1'
@@ -25,6 +29,7 @@ OPENAPI_FILE = 'openapi.json'
 WINDOW_SIZE = 100
 
 p = Path('./tensorflow/models') 
+
 MODEL_NAME = 'cnn_model_fft_filtered01_sf_nomove_2_Chest_Right.tflite'
 model = p / MODEL_NAME
 
@@ -114,8 +119,13 @@ class RespeckData(Resource):
             streams[respeck_mac] = s
 
         npdata = np.array(d, dtype=np.float32).reshape((-1, 3))
+        print("Incoming data shape:")
         print(npdata.shape)
-        p, l, a = interpreter.make_prediction_on_data(npdata, fft=True)
+        t1 = timeit.default_timer()
+        p, l, a = interpreter.make_prediction_on_data(npdata, fft=True, grouped=True)
+        t2 = timeit.default_timer()
+        with open(LOGFILENAME, 'a') as f:
+            f.writelines([f"[{t1:.2f}] inference time: {(t2-t1)*1000:.5f}\n"])
 
         res = {
             # 'mac': respeck_mac,

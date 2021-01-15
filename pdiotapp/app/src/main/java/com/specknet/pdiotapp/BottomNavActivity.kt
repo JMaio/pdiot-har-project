@@ -100,6 +100,8 @@ class BottomNavActivity : AppCompatActivity() {
         fab.setOnClickListener {
             startActivity(Intent(this, MainActivity::class.java))
         }
+
+
     }
 
     private fun setupPermissions() {

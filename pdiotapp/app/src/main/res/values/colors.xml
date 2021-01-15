@@ -2,8 +2,8 @@
 <resources>
     <color name="colorPrimary">#29B6F6</color>
     <color name="colorPrimaryDark">#039BE5</color>
-    <color name="colorAccent">#FFA726</color>
-<!--    <color name="colorSecondary">#5C6BC0</color>-->
+    <color name="colorAccent">#039BE5</color>
+    <!--    <color name="colorSecondary">#5C6BC0</color>-->
 
     <!-- Chart colors -->
     <!--    <color name="red">#FF595E</color>-->
@@ -53,4 +53,8 @@
     <color name="cyan_50">#E0F7FA</color>
     <color name="amber_50">#FFF8E1</color>
     <color name="purple_50">#F3E5F5</color>
+    <color name="light_blue_400">#FF29B6F6</color>
+    <color name="light_blue_600">#FF039BE5</color>
+    <color name="gray_400">#FFBDBDBD</color>
+    <color name="gray_600">#FF757575</color>
 </resources>

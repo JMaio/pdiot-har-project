@@ -3,8 +3,6 @@ package com.specknet.pdiotapp.utils;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
-import android.provider.ContactsContract;
-import android.text.format.DateUtils;
 import android.util.Log;
 
 import com.specknet.pdiotapp.bluetooth.BluetoothService;
@@ -12,7 +10,6 @@ import com.specknet.pdiotapp.bluetooth.BluetoothService;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 public class Utils {

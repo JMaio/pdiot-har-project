@@ -10,7 +10,7 @@
         android:label="live"
         tools:layout="@layout/activity_live_data" />
     <fragment
-        android:id="@+id/navigation_timeline"
+        android:id="@+id/navigation_activity_tracking"
         android:name="com.specknet.pdiotapp.tracking.ActivityTrackingFragment"
         android:label="fragment_activity_tracking"
         tools:layout="@layout/fragment_activity_tracking" />
