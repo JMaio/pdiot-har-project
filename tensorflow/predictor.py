@@ -127,23 +127,30 @@ class Predictor:
     # input data after doing any amplitude processing
     def fftransform(self, data):
 
-        filter_freq = 12.5*0.01
+        #filter_freq = 0.1 * 12.5 / 2
 
         overlap = 10
-        window_size = 25
+        window_size = 24
 
         window_spec = []
 
         start_i = 0
         end_i = start_i + window_size
 
+        prev_dc = 0
+
         while end_i <= data.shape[0]:
             window = data[start_i:end_i] * np.hamming(window_size)[:,None]
 
-            mag = np.abs(np.fft.fft(window, axis = 0))
+            # filtering out low frequencies to remove noise due to gravity
+            dc = (0.0158 * window + 0.9843 * prev_dc)
+            mag_window = window - dc
 
-            # filtering out low frequencies to remove noise
-            mag[mag < filter_freq] = 0
+            prev_dc = dc
+
+            mag = np.abs(np.fft.fftshift(np.fft.fft(mag_window, axis = 0)))
+            
+            #mag[mag > filter_freq] = 0
 
             window_spec.append(mag)
 
@@ -205,7 +212,7 @@ if __name__ == "__main__":
         data = np.array(pd.read_csv(f))
 
     print(data.shape)
-    model_filename = './models/cnn_model_fft_filtered01_sf_nomove_2_Chest_Right.tflite'
+    model_filename = './models/cnn_model_fft_4_Chest_Right.tflite'
 
     grouped = True
     fft = True # fast fourier transform 
