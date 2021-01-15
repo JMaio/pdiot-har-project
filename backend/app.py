@@ -29,8 +29,9 @@ OPENAPI_FILE = 'openapi.json'
 WINDOW_SIZE = 100
 
 p = Path('./tensorflow/models') 
-model_name = 'cnn_model_window24_2_Chest_Right.tflite'
-model = p / model_name
+
+MODEL_NAME = 'cnn_model_fft_filtered01_sf_nomove_2_Chest_Right.tflite'
+model = p / MODEL_NAME
 
 interpreter = Predictor(str(model.absolute()))
 
