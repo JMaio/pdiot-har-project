@@ -7,4 +7,4 @@ Files used for training the model are stored in `tensorflow/data`.
 Commented out cells contain code for functions or graphs that were used in the exploration phase of development but are not necessary to run the final models used in the report.
 
 
-The file backend/README.md explains how to set up the server to run live preditions on the app. 
+The `backend/README.md` file explains how to set up the server to run live predictions on the app. 
